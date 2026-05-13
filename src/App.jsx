@@ -667,13 +667,23 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 // ── Progreso cliente ──────────────────────────────────────────────
 
 function ProgresoCliente({ historico, comentarios = [] }) {
+  // El histórico viene ordenado asc por fecha_ingreso.
+  // Para cada estado_operativo nos quedamos con la PRIMERA aparición
+  // (cuando entró a ese estado por primera vez) para tener fecha_ingreso correcta,
+  // y la ÚLTIMA para tener fecha_listo correcta.
+  // El estado actual es el del último registro del array.
   const casoActual  = historico[historico.length - 1];
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
-  const histMap = {};
+  // histMapFirst: primera fila de cada estado → fecha_ingreso real
+  // histMapLast:  última fila de cada estado  → fecha_listo real
+  const histMapFirst = {};
+  const histMapLast  = {};
   for (const fila of historico) {
     const k = fila.estado_operativo?.toUpperCase().trim();
-    if (k) histMap[k] = fila;
+    if (!k) continue;
+    if (!histMapFirst[k]) histMapFirst[k] = fila; // primera aparición
+    histMapLast[k] = fila;                         // siempre sobreescribe → queda la última
   }
 
   // Mapa de estado_operativo → comentarios de ese subestado (ordenados desc)
@@ -722,10 +732,13 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const ordenS     = getOrden(s.key);
                 const completado = ordenS < ordenActual;
                 const activo     = ordenS === ordenActual;
-                const fila       = histMap[s.key];
+                const filaFirst  = histMapFirst[s.key];
+                const filaLast   = histMapLast[s.key];
                 const tieneInfo  = completado || activo;
-                const inicioStr  = fila ? formatFechaHora(fila.fecha_ingreso, fila.hora_ingreso) : null;
-                const listoStr   = fila ? formatFechaHora(fila.fecha_listo,   fila.hora_listo)   : null;
+                // fecha inicio = primera vez que entró a este estado
+                const inicioStr  = filaFirst ? formatFechaHora(filaFirst.fecha_ingreso, filaFirst.hora_ingreso) : null;
+                // fecha fin = última fila del estado (tiene el fecha_listo cuando se completó)
+                const listoStr   = filaLast  ? formatFechaHora(filaLast.fecha_listo,   filaLast.hora_listo)    : null;
 
                 return (
                   <div key={s.key} style={{
