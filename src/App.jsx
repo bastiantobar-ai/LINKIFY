@@ -301,15 +301,15 @@ function PantallaInicio({ onCliente, onInterno }) {
 // ── Login internos (contraseña simple) ───────────────────────────
 
 function LoginInterno({ onLogin, onVolver }) {
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr]           = useState("");
 
   function handleLogin() {
-    if (password === PANEL_PASSWORD) {
-      onLogin();
-    } else {
-      setErr("Contraseña incorrecta");
-    }
+    if (!email.trim()) { setErr("Ingresa tu correo"); return; }
+    if (!email.trim().toLowerCase().endsWith("@kavak.com")) { setErr("Solo se permiten correos @kavak.com"); return; }
+    if (password !== PANEL_PASSWORD) { setErr("Contraseña incorrecta"); return; }
+    onLogin(email.trim().toLowerCase());
   }
 
   const inputStyle = {
@@ -332,8 +332,7 @@ function LoginInterno({ onLogin, onVolver }) {
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{
             background: KAVAK_BLUE, borderRadius: 14, padding: "10px 24px",
-            display: "inline-block",
-            margin: "0 auto 16px",
+            display: "inline-block", margin: "0 auto 16px",
           }}>
             <KavakLogo dark={false} />
           </div>
@@ -343,7 +342,16 @@ function LoginInterno({ onLogin, onVolver }) {
           <p style={{ margin: 0, fontSize: 13, color: "#999" }}>Solo equipo Post-Venta Kavak</p>
         </div>
 
-        <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Contraseña</label>
+        <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Correo Kavak</label>
+        <input
+          style={inputStyle}
+          type="email"
+          placeholder="nombre@kavak.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleLogin()}
+        />
+        <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6, marginTop: 14 }}>Contraseña</label>
         <input
           style={inputStyle}
           type="password"
@@ -372,10 +380,10 @@ function LoginInterno({ onLogin, onVolver }) {
 
 // ── Modal comentario ──────────────────────────────────────────────
 
-function ModalComentario({ caso, onSave, onClose }) {
+function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
   const { subestado, principal } = getMapped(caso.estado_operativo);
   const [comentario, setComentario] = useState("");
-  const [creadoPor, setCreadoPor]   = useState("");
+  const [creadoPor, setCreadoPor]   = useState(defaultUser);
   const [saving, setSaving]         = useState(false);
   const [err, setErr]               = useState("");
 
@@ -876,7 +884,7 @@ function PortalCliente({ onVolver }) {
 
 // ── Panel Interno ─────────────────────────────────────────────────
 
-function PanelInterno({ onCerrarSesion }) {
+function PanelInterno({ onCerrarSesion, userEmail }) {
   const [tab, setTab]                   = useState("backlog");
   const [casos, setCasos]               = useState([]);
   const [comentariosMap, setComentariosMap] = useState({});
@@ -948,6 +956,11 @@ function PanelInterno({ onCerrarSesion }) {
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
           {loading && <span style={{ fontSize: 12, color: "#bbb" }}>Cargando...</span>}
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: errConn ? "#E24B4A" : "#1D9E75" }} title={errConn || "Conectado"} />
+          {userEmail && (
+            <span style={{ fontSize: 12, color: "#aaa", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {userEmail}
+            </span>
+          )}
           <button onClick={onCerrarSesion} style={{
             fontSize: 12, color: "#E24B4A", background: "none", border: "1px solid #E24B4A40",
             borderRadius: 6, padding: "4px 10px", cursor: "pointer",
@@ -979,7 +992,7 @@ function PanelInterno({ onCerrarSesion }) {
 
       {modalComentario && (
         <Modal title="Agregar comentario" onClose={() => setModalComentario(null)}>
-          <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} />
+          <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} defaultUser={userEmail} />
         </Modal>
       )}
       {modalHistorial && (
@@ -994,7 +1007,8 @@ function PanelInterno({ onCerrarSesion }) {
 // ── App ───────────────────────────────────────────────────────────
 
 export default function App() {
-  const [vista, setVista] = useState("inicio");
+  const [vista, setVista]       = useState("inicio");
+  const [userEmail, setUserEmail] = useState("");
 
   if (vista === "inicio") return (
     <PantallaInicio
@@ -1009,12 +1023,12 @@ export default function App() {
 
   if (vista === "login") return (
     <LoginInterno
-      onLogin={() => setVista("interno")}
+      onLogin={(email) => { setUserEmail(email); setVista("interno"); }}
       onVolver={() => setVista("inicio")}
     />
   );
 
   if (vista === "interno") return (
-    <PanelInterno onCerrarSesion={() => setVista("inicio")} />
+    <PanelInterno userEmail={userEmail} onCerrarSesion={() => { setUserEmail(""); setVista("inicio"); }} />
   );
 }
