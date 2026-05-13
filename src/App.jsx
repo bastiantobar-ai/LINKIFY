@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // ── Auth simple por contraseña ────────────────────────────────────
 // Contraseña definida como variable de entorno o hardcoded aquí
-const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2026";
+const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2024";
 
 // ── Estado map ───────────────────────────────────────────────────
 
@@ -48,10 +48,14 @@ const KAVAK_BLUE_LIGHT = "#E5F0FF";
 // ── Kavak Logo ────────────────────────────────────────────────────
 
 function KavakLogo({ size = 32, dark = false }) {
+  // Letras K-A-V-A-K como paths para evitar problemas de fuente/corte
+  const color = dark ? "#0066FF" : "#ffffff";
+  const h = size;
+  const w = size * 3.2;
   return (
-    <svg height={size} viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <text x="2" y="32" fontFamily="Arial Black, Arial, sans-serif" fontSize="34" fontWeight="900"
-        fill={dark ? "#0066FF" : "#ffffff"} letterSpacing="-1">KAVAK</text>
+    <svg height={h} width={w} viewBox="0 0 160 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="4" y="40" fontFamily="'Arial Black', 'Arial Bold', Arial, sans-serif" fontSize="42"
+        fontWeight="900" fill={color} letterSpacing="2">KAVAK</text>
     </svg>
   );
 }
