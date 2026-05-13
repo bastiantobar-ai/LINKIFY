@@ -78,9 +78,20 @@ function supabaseFetch(path, options = {}) {
 }
 
 async function getCasos() {
-  const res = await supabaseFetch("bbdd_cc?order=id_sistema.asc");
+  // Traemos todos ordenados por fecha_ingreso desc + id_sistema desc
+  // para que el primer registro de cada patente sea siempre el más reciente
+  const res = await supabaseFetch("bbdd_cc?order=fecha_ingreso.desc,id_sistema.desc");
   if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const todos = await res.json();
+
+  // Deduplicamos por patente: nos quedamos solo con el registro más reciente
+  const vistos = new Set();
+  return todos.filter(c => {
+    const key = c.patente?.toUpperCase().trim();
+    if (!key || vistos.has(key)) return false;
+    vistos.add(key);
+    return true;
+  });
 }
 
 async function getComentarios() {
@@ -98,19 +109,26 @@ async function addComentario(data) {
   return res.json();
 }
 
+// Panel interno: solo el registro más reciente por número de caso
 async function getCasoByNumero(numero) {
-  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&limit=1`);
+  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.desc,id_sistema.desc&limit=1`);
   if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
   return data[0] || null;
 }
 
-// NUEVO: buscar por patente
-async function getCasoByPatente(patente) {
-  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&limit=1`);
+// Portal cliente: historial completo por número de caso, orden cronológico asc
+async function getHistorialByNumero(numero) {
+  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.asc,id_sistema.asc`);
   if (!res.ok) throw new Error(await res.text());
-  const data = await res.json();
-  return data[0] || null;
+  return res.json();
+}
+
+// Portal cliente: historial completo por patente, orden cronológico asc
+async function getHistorialByPatente(patente) {
+  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=fecha_ingreso.asc,id_sistema.asc`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
 async function getComentariosByCaso(numero) {
@@ -455,13 +473,19 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 
 // ── Progreso cliente ──────────────────────────────────────────────
 
-function ProgresoCliente({ estadoActual, fechaIngreso, horaIngreso, fechaListo, horaListo }) {
-  const ordenActual = getOrden(estadoActual?.toUpperCase().trim());
+// historico: array de filas de bbdd_cc para esta patente, ordenado asc por fecha
+// El último elemento es el estado actual (más reciente)
+function ProgresoCliente({ historico }) {
+  // Estado actual = último registro del histórico
+  const casoActual = historico[historico.length - 1];
+  const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
-  // Determinamos el orden del primer subestado de cada grupo principal
-  // para saber si aplicar fecha_ingreso (inicio del proceso) y fecha_listo (fin del subestado activo)
-  const fechaInicioStr = formatFechaHora(fechaIngreso, horaIngreso);
-  const fechaListoStr  = formatFechaHora(fechaListo, horaListo);
+  // Mapa de estado_operativo → fila del histórico para acceder a sus fechas
+  const histMap = {};
+  for (const fila of historico) {
+    const k = fila.estado_operativo?.toUpperCase().trim();
+    if (k) histMap[k] = fila;
+  }
 
   const grupos = [
     { key: "Diagnostico", label: "Diagnóstico", subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Diagnostico") },
@@ -496,15 +520,15 @@ function ProgresoCliente({ estadoActual, fechaIngreso, horaIngreso, fechaListo, 
             </div>
             <div style={{ marginLeft: 38, display: "flex", flexDirection: "column", gap: 5 }}>
               {grupo.subestados.map(s => {
-                const ordenS    = getOrden(s.key);
+                const ordenS     = getOrden(s.key);
                 const completado = ordenS < ordenActual;
                 const activo     = ordenS === ordenActual;
+                // Si no hay registro para este subestado y tampoco es pasado/activo → futuro sin info
+                const fila       = histMap[s.key];
+                const tieneInfo  = completado || activo; // solo mostramos fechas si existe en el histórico
 
-                // Fechas a mostrar en el subestado activo:
-                // - fecha_ingreso = cuando inició este subestado (ingresó al taller / al estado)
-                // - fecha_listo   = cuando se completó (solo si existe)
-                const mostrarFechas = activo;
-                const esPrimerSubestado = ordenS === 0; // "Pendiente de diagnóstico"
+                const inicioStr = fila ? formatFechaHora(fila.fecha_ingreso, fila.hora_ingreso) : null;
+                const listoStr  = fila ? formatFechaHora(fila.fecha_listo,   fila.hora_listo)   : null;
 
                 return (
                   <div key={s.key} style={{
@@ -536,28 +560,28 @@ function ProgresoCliente({ estadoActual, fechaIngreso, horaIngreso, fechaListo, 
                       )}
                     </div>
 
-                    {/* Fechas debajo del subestado activo */}
-                    {mostrarFechas && (fechaInicioStr || fechaListoStr) && (
+                    {/* Fechas: inicio siempre si hay info; listo solo si completado y existe */}
+                    {tieneInfo && (inicioStr || listoStr) && (
                       <div style={{
                         marginTop: 8, marginLeft: 30,
-                        display: "flex", gap: 12, flexWrap: "wrap",
+                        display: "flex", gap: 10, flexWrap: "wrap",
                       }}>
-                        {fechaInicioStr && (
+                        {inicioStr && (
                           <span style={{
                             fontSize: 11, color: cfg.text,
                             background: "#fff", border: `1px solid ${cfg.border}`,
                             borderRadius: 6, padding: "2px 8px",
                           }}>
-                            📅 Inicio: {fechaInicioStr}
+                            📅 Inicio: {inicioStr}
                           </span>
                         )}
-                        {fechaListoStr && (
+                        {listoStr && (
                           <span style={{
                             fontSize: 11, color: cfg.text,
                             background: "#fff", border: `1px solid ${cfg.border}`,
                             borderRadius: 6, padding: "2px 8px",
                           }}>
-                            ✅ Listo: {fechaListoStr}
+                            ✅ Fin: {listoStr}
                           </span>
                         )}
                       </div>
@@ -581,6 +605,7 @@ function ProgresoCliente({ estadoActual, fechaIngreso, horaIngreso, fechaListo, 
 function PortalCliente({ onIrInterno }) {
   const [busqueda, setBusqueda] = useState("");
   const [caso, setCaso] = useState(null);
+  const [historico, setHistorico] = useState([]);
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -588,21 +613,24 @@ function PortalCliente({ onIrInterno }) {
   async function buscar() {
     const q = busqueda.trim();
     if (!q) return;
-    setLoading(true); setErr(""); setCaso(null); setComentarios([]);
+    setLoading(true); setErr(""); setCaso(null); setHistorico([]); setComentarios([]);
     try {
-      // Intentamos primero por número de caso; si falla o no encuentra, por patente
-      let res = null;
+      // Trae historial completo ordenado asc
+      let hist = [];
       if (/^\d+$/.test(q)) {
-        res = await getCasoByNumero(q);
+        hist = await getHistorialByNumero(q);
       }
-      if (!res) {
-        res = await getCasoByPatente(q);
+      if (hist.length === 0) {
+        hist = await getHistorialByPatente(q);
       }
-      if (!res) {
+      if (hist.length === 0) {
         setErr("No se encontró ningún caso con ese número o patente.");
       } else {
-        setCaso(res);
-        const comms = await getComentariosByCaso(res.numero_caso);
+        // caso actual = el registro más reciente (último en el array asc)
+        const casoReciente = hist[hist.length - 1];
+        setCaso(casoReciente);
+        setHistorico(hist);
+        const comms = await getComentariosByCaso(casoReciente.numero_caso);
         setComentarios(comms);
       }
     } catch (e) {
@@ -663,13 +691,7 @@ function PortalCliente({ onIrInterno }) {
 
           <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 16, marginTop: 16 }}>
             <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "#555" }}>Estado del proceso</p>
-            <ProgresoCliente
-              estadoActual={caso.estado_operativo}
-              fechaIngreso={caso.fecha_ingreso}
-              horaIngreso={caso.hora_ingreso}
-              fechaListo={caso.fecha_listo}
-              horaListo={caso.hora_listo}
-            />
+            <ProgresoCliente historico={historico} />
           </div>
 
           {comentarios.length > 0 && (
