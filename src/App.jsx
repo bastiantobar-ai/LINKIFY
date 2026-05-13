@@ -988,6 +988,12 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
               {userEmail}
             </span>
           )}
+          <button onClick={() => window.open(window.location.href, "_blank")} style={{
+            fontSize: 12, color: KAVAK_BLUE, background: "none", border: `1px solid ${KAVAK_BLUE}40`,
+            borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+          }}>
+            👤 Vista cliente
+          </button>
           <button onClick={onCerrarSesion} style={{
             fontSize: 12, color: "#E24B4A", background: "none", border: "1px solid #E24B4A40",
             borderRadius: 6, padding: "4px 10px", cursor: "pointer",
