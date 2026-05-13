@@ -3,68 +3,9 @@ import { useState, useEffect, useCallback } from "react";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// ── Supabase Auth ─────────────────────────────────────────────────
-
-// Envía magic link — el usuario hace click en el correo y vuelve con token en el hash
-async function authSignInWithOtp(email) {
-  const redirectTo = window.location.origin + window.location.pathname;
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
-    method: "POST",
-    headers: {
-      "apikey": SUPABASE_ANON_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email,
-      create_user: false,
-      options: { emailRedirectTo: redirectTo },
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.msg || err.message || "Error al enviar magic link");
-  }
-  return true;
-}
-
-// Parsea el hash de la URL después del redirect del magic link
-// Supabase devuelve: #access_token=...&token_type=bearer&...
-function parseHashToken() {
-  const hash = window.location.hash.substring(1);
-  if (!hash) return null;
-  const params = new URLSearchParams(hash);
-  const accessToken = params.get("access_token");
-  const type = params.get("type");
-  if (accessToken && (type === "magiclink" || type === "signup" || params.get("token_type") === "bearer")) {
-    // Limpiar el hash de la URL
-    window.history.replaceState(null, "", window.location.pathname);
-    return accessToken;
-  }
-  return null;
-}
-
-// Obtiene el email del usuario a partir del access token
-async function getUserEmail(accessToken) {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    headers: {
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": `Bearer ${accessToken}`,
-    },
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.email || null;
-}
-
-async function authSignOut(accessToken) {
-  await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
-    method: "POST",
-    headers: {
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": `Bearer ${accessToken}`,
-    },
-  });
-}
+// ── Auth simple por contraseña ────────────────────────────────────
+// Contraseña definida como variable de entorno o hardcoded aquí
+const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2024";
 
 // ── Estado map ───────────────────────────────────────────────────
 
@@ -130,11 +71,11 @@ function haceHoras(fecha) {
 
 // ── API REST (usa token si disponible) ────────────────────────────
 
-function supabaseFetch(path, options = {}, accessToken = null) {
+function supabaseFetch(path, options = {}) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
   const headers = {
     "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${accessToken || SUPABASE_ANON_KEY}`,
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
     "Content-Type": "application/json",
     "Prefer": options.prefer || "return=representation",
     ...options.headers,
@@ -143,8 +84,8 @@ function supabaseFetch(path, options = {}, accessToken = null) {
 }
 
 // bbdd_cc: solo lectura, sin token (para cliente) y con token (para interno)
-async function getCasos(accessToken) {
-  const res = await supabaseFetch("bbdd_cc?order=fecha_ingreso.desc,id_sistema.desc", {}, accessToken);
+async function getCasos() {
+  const res = await supabaseFetch("bbdd_cc?order=fecha_ingreso.desc,id_sistema.desc", {});
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
   const vistos = new Set();
@@ -156,17 +97,17 @@ async function getCasos(accessToken) {
   });
 }
 
-async function getComentarios(accessToken) {
-  const res = await supabaseFetch("comentarios?order=created_at.desc", {}, accessToken);
+async function getComentarios() {
+  const res = await supabaseFetch("comentarios?order=created_at.desc", {});
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
-async function addComentario(data, accessToken) {
+async function addComentario(data) {
   const res = await supabaseFetch("comentarios", {
     method: "POST",
     body: JSON.stringify(data),
-  }, accessToken);
+  });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -323,26 +264,17 @@ function PantallaInicio({ onCliente, onInterno }) {
   );
 }
 
-// ── Login internos (magic link) ───────────────────────────────────
+// ── Login internos (contraseña simple) ───────────────────────────
 
 function LoginInterno({ onLogin, onVolver }) {
-  const [email, setEmail]     = useState("");
-  const [loading, setLoading] = useState(false);
-  const [enviado, setEnviado] = useState(false);
-  const [err, setErr]         = useState("");
+  const [password, setPassword] = useState("");
+  const [err, setErr]           = useState("");
 
-  async function handleSendLink() {
-    const e = email.trim().toLowerCase();
-    if (!e) { setErr("Ingresa tu correo"); return; }
-    if (!e.endsWith("@kavak.com")) { setErr("Solo se permiten correos @kavak.com"); return; }
-    setLoading(true); setErr("");
-    try {
-      await authSignInWithOtp(e);
-      setEnviado(true);
-    } catch (ex) {
-      setErr(ex.message);
-    } finally {
-      setLoading(false);
+  function handleLogin() {
+    if (password === PANEL_PASSWORD) {
+      onLogin();
+    } else {
+      setErr("Contraseña incorrecta");
     }
   }
 
@@ -370,51 +302,28 @@ function LoginInterno({ onLogin, onVolver }) {
             margin: "0 auto 12px", fontSize: 24,
           }}>🔧</div>
           <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
-            {enviado ? "Revisa tu correo" : "Acceso internos"}
+            Acceso internos
           </h2>
-          <p style={{ margin: 0, fontSize: 13, color: "#999" }}>
-            {enviado ? `Enviamos un link a ${email}` : "Ingresa tu correo @kavak.com"}
-          </p>
+          <p style={{ margin: 0, fontSize: 13, color: "#999" }}>Solo equipo Post-Venta Kavak</p>
         </div>
 
-        {!enviado ? (
-          <>
-            <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Correo Kavak</label>
-            <input
-              style={inputStyle}
-              type="email"
-              placeholder="nombre@kavak.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSendLink()}
-            />
-            {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "8px 0 0" }}>{err}</p>}
-            <button onClick={handleSendLink} disabled={loading} style={{
-              width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
-              background: "#534AB7", color: "#fff", fontWeight: 600,
-              cursor: loading ? "wait" : "pointer", fontSize: 15, marginTop: 12,
-            }}>
-              {loading ? "Enviando..." : "Enviar magic link"}
-            </button>
-          </>
-        ) : (
-          <>
-            <div style={{ background: "#E1F5EE", border: "1px solid #1D9E7530", borderRadius: 12, padding: "20px 16px", textAlign: "center", marginBottom: 16 }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📬</div>
-              <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 600, color: "#085041" }}>
-                Link enviado
-              </p>
-              <p style={{ margin: 0, fontSize: 13, color: "#1D9E75", lineHeight: 1.5 }}>
-                Haz click en el link del correo para ingresar al panel. Puedes cerrar esta pestaña.
-              </p>
-            </div>
-            <button onClick={() => { setEnviado(false); setEmail(""); setErr(""); }} style={{
-              width: "100%", padding: "10px 0", borderRadius: 10,
-              border: "1px solid #e0e0e0", background: "transparent",
-              color: "#888", cursor: "pointer", fontSize: 13,
-            }}>Reenviar link</button>
-          </>
-        )}
+        <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Contraseña</label>
+        <input
+          style={inputStyle}
+          type="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleLogin()}
+        />
+        {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "8px 0 0" }}>{err}</p>}
+        <button onClick={handleLogin} style={{
+          width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
+          background: "#534AB7", color: "#fff", fontWeight: 600,
+          cursor: "pointer", fontSize: 15, marginTop: 12,
+        }}>
+          Ingresar
+        </button>
 
         <button onClick={onVolver} style={{
           width: "100%", marginTop: 14, background: "none", border: "none",
@@ -445,7 +354,7 @@ function ModalComentario({ caso, onSave, onClose, accessToken }) {
         comentario: comentario.trim(),
         creado_por: creadoPor.trim() || "Sin nombre",
         created_at: new Date().toISOString(),
-      }, accessToken);
+      });
       onSave();
       onClose();
     } catch (e) {
@@ -929,7 +838,7 @@ function PortalCliente({ onVolver }) {
 
 // ── Panel Interno ─────────────────────────────────────────────────
 
-function PanelInterno({ accessToken, userEmail, onCerrarSesion }) {
+function PanelInterno({ onCerrarSesion }) {
   const [tab, setTab]                   = useState("backlog");
   const [casos, setCasos]               = useState([]);
   const [comentariosMap, setComentariosMap] = useState({});
@@ -942,8 +851,8 @@ function PanelInterno({ accessToken, userEmail, onCerrarSesion }) {
     setLoading(true);
     try {
       const [casosData, comentariosData] = await Promise.all([
-        getCasos(accessToken),
-        getComentarios(accessToken),
+        getCasos(),
+        getComentarios(),
       ]);
       setCasos(casosData);
       const map = {};
@@ -968,11 +877,6 @@ function PanelInterno({ accessToken, userEmail, onCerrarSesion }) {
     const ultimo = comentariosDeCaso[0];
     return !ultimo || ultimo.estado?.toUpperCase().trim() !== c.estado_operativo?.toUpperCase().trim();
   }).length;
-
-  async function handleCerrarSesion() {
-    await authSignOut(accessToken).catch(() => {});
-    onCerrarSesion();
-  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#f5f4f1" }}>
@@ -1006,12 +910,7 @@ function PanelInterno({ accessToken, userEmail, onCerrarSesion }) {
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
           {loading && <span style={{ fontSize: 12, color: "#bbb" }}>Cargando...</span>}
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: errConn ? "#E24B4A" : "#1D9E75" }} title={errConn || "Conectado"} />
-          {userEmail && (
-            <span style={{ fontSize: 12, color: "#aaa", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {userEmail}
-            </span>
-          )}
-          <button onClick={handleCerrarSesion} style={{
+          <button onClick={onCerrarSesion} style={{
             fontSize: 12, color: "#E24B4A", background: "none", border: "1px solid #E24B4A40",
             borderRadius: 6, padding: "4px 10px", cursor: "pointer",
           }}>
@@ -1057,39 +956,7 @@ function PanelInterno({ accessToken, userEmail, onCerrarSesion }) {
 // ── App ───────────────────────────────────────────────────────────
 
 export default function App() {
-  // vista: "inicio" | "cliente" | "login" | "interno"
-  const [vista, setVista]             = useState("inicio");
-  const [accessToken, setAccessToken] = useState(null);
-  const [userEmail, setUserEmail]     = useState("");
-
-  // Al cargar, detecta si venimos de un magic link (hash en la URL)
-  useEffect(() => {
-    const token = parseHashToken();
-    if (token) {
-      getUserEmail(token).then(email => {
-        if (email && email.endsWith("@kavak.com")) {
-          setAccessToken(token);
-          setUserEmail(email);
-          setVista("interno");
-        } else {
-          // Email no es @kavak.com — rechazar
-          setVista("login");
-        }
-      });
-    }
-  }, []);
-
-  function handleLogin(token, email) {
-    setAccessToken(token);
-    setUserEmail(email);
-    setVista("interno");
-  }
-
-  function handleCerrarSesion() {
-    setAccessToken(null);
-    setUserEmail("");
-    setVista("inicio");
-  }
+  const [vista, setVista] = useState("inicio");
 
   if (vista === "inicio") return (
     <PantallaInicio
@@ -1104,16 +971,12 @@ export default function App() {
 
   if (vista === "login") return (
     <LoginInterno
-      onLogin={handleLogin}
+      onLogin={() => setVista("interno")}
       onVolver={() => setVista("inicio")}
     />
   );
 
   if (vista === "interno") return (
-    <PanelInterno
-      accessToken={accessToken}
-      userEmail={userEmail}
-      onCerrarSesion={handleCerrarSesion}
-    />
+    <PanelInterno onCerrarSesion={() => setVista("inicio")} />
   );
 }
