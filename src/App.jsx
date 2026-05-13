@@ -47,16 +47,16 @@ const KAVAK_BLUE_LIGHT = "#E5F0FF";
 
 // ── Kavak Logo ────────────────────────────────────────────────────
 
-function KavakLogo({ size = 32, dark = false }) {
-  // Letras K-A-V-A-K como paths para evitar problemas de fuente/corte
-  const color = dark ? "#0066FF" : "#ffffff";
-  const h = size;
-  const w = size * 3.2;
+function KavakLogo({ dark = false, small = false }) {
   return (
-    <svg height={h} width={w} viewBox="0 0 160 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <text x="4" y="40" fontFamily="'Arial Black', 'Arial Bold', Arial, sans-serif" fontSize="42"
-        fontWeight="900" fill={color} letterSpacing="2">KAVAK</text>
-    </svg>
+    <span style={{
+      fontFamily: "'Arial Black', 'Arial Bold', Arial, sans-serif",
+      fontWeight: 900,
+      fontSize: small ? 14 : 20,
+      letterSpacing: 1,
+      color: dark ? "#0066FF" : "#ffffff",
+      lineHeight: 1,
+    }}>KAVAK</span>
   );
 }
 
@@ -216,7 +216,7 @@ function PantallaInicio({ onCliente, onInterno }) {
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           margin: "0 auto 20px",
         }}>
-          <KavakLogo size={28} dark={false} />
+          <KavakLogo dark={false} />
         </div>
         <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#1a1a1a", letterSpacing: -0.5 }}>
           Sigue tu caso
@@ -324,7 +324,7 @@ function LoginInterno({ onLogin, onVolver }) {
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             margin: "0 auto 16px",
           }}>
-            <KavakLogo size={22} dark={false} />
+            <KavakLogo dark={false} />
           </div>
           <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
             Acceso internos
@@ -796,7 +796,7 @@ function PortalCliente({ onVolver }) {
     <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 16px 48px" }}>
       <div style={{ textAlign: "center", marginBottom: 32 }}>
         <div style={{ background: KAVAK_BLUE, borderRadius: 16, padding: "10px 20px", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-          <KavakLogo size={24} dark={false} />
+          <KavakLogo dark={false} />
         </div>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 700, color: "#1a1a1a" }}>Seguimiento de mi vehículo</h1>
         <p style={{ margin: 0, fontSize: 14, color: "#888" }}>Ingresa tu número de caso o patente para ver el estado actual</p>
@@ -913,7 +913,7 @@ function PanelInterno({ onCerrarSesion }) {
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <div style={{ padding: "14px 20px 14px 0", marginRight: 16, borderRight: "1px solid #ececec" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><KavakLogo size={18} dark={true} /><span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a" }}>Sigue tu caso</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><KavakLogo dark={true} small={true} /><span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a" }}>Sigue tu caso</span></div>
         </div>
         {[
           { key: "backlog", label: "Backlog" },
