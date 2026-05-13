@@ -44,7 +44,7 @@ function getOrden(keyEstado) {
 }
 
 function formatFechaHora(fecha, hora) {
-  if (!fecha) return "-";
+  if (!fecha) return null;
   const f = new Date(fecha).toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
   const h = hora ? hora.slice(0, 5) : null;
   return h ? `${f} ${h}` : f;
@@ -100,6 +100,14 @@ async function addComentario(data) {
 
 async function getCasoByNumero(numero) {
   const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&limit=1`);
+  if (!res.ok) throw new Error(await res.text());
+  const data = await res.json();
+  return data[0] || null;
+}
+
+// NUEVO: buscar por patente
+async function getCasoByPatente(patente) {
+  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&limit=1`);
   if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
   return data[0] || null;
@@ -173,6 +181,7 @@ function ModalComentario({ caso, onSave, onClose }) {
     try {
       await addComentario({
         numero_caso: caso.numero_caso,
+        patente: caso.patente,           // NUEVO: guardamos patente
         estado: caso.estado_operativo,
         comentario: comentario.trim(),
         creado_por: creadoPor.trim() || "Sin nombre",
@@ -291,7 +300,7 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial
             )}
             {alerta === "advertencia" && (
               <span style={{ background: "#FCEBEB", color: "#A32D2D", border: "1px solid #E24B4A40", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500 }}>
-                ⚠ Sin comentario +24h
+                ⚠ Sin comentario +72h
               </span>
             )}
           </div>
@@ -363,7 +372,8 @@ function TabPendientes({ casos, comentariosMap, onAgregarComentario, onVerHistor
             {pendientes.map(c => {
               const comentariosDeCaso = comentariosMap[c.numero_caso] || [];
               const ultimo = comentariosDeCaso[0];
-              const alerta = haceHoras(ultimo?.created_at) >= 24 ? "advertencia" : "urgente";
+              // CAMBIO: umbral 72h en vez de 24h
+              const alerta = haceHoras(ultimo?.created_at) >= 72 ? "advertencia" : "urgente";
               return (
                 <CasoCard key={c.id_sistema} caso={c} comentariosDeCaso={comentariosDeCaso}
                   onAgregarComentario={onAgregarComentario} onVerHistorial={onVerHistorial}
@@ -445,8 +455,13 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 
 // ── Progreso cliente ──────────────────────────────────────────────
 
-function ProgresoCliente({ estadoActual }) {
+function ProgresoCliente({ estadoActual, fechaIngreso, horaIngreso, fechaListo, horaListo }) {
   const ordenActual = getOrden(estadoActual?.toUpperCase().trim());
+
+  // Determinamos el orden del primer subestado de cada grupo principal
+  // para saber si aplicar fecha_ingreso (inicio del proceso) y fecha_listo (fin del subestado activo)
+  const fechaInicioStr = formatFechaHora(fechaIngreso, horaIngreso);
+  const fechaListoStr  = formatFechaHora(fechaListo, horaListo);
 
   const grupos = [
     { key: "Diagnostico", label: "Diagnóstico", subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Diagnostico") },
@@ -458,7 +473,7 @@ function ProgresoCliente({ estadoActual }) {
     <div style={{ margin: "16px 0" }}>
       {grupos.map((grupo, gi) => {
         const cfg = ESTADOS[grupo.key];
-        const grupoActivo = grupo.subestados.some(s => getOrden(s.key) <= ordenActual);
+        const grupoActivo   = grupo.subestados.some(s => getOrden(s.key) <= ordenActual);
         const grupoCompleto = grupo.subestados.every(s => getOrden(s.key) < ordenActual);
 
         return (
@@ -481,34 +496,71 @@ function ProgresoCliente({ estadoActual }) {
             </div>
             <div style={{ marginLeft: 38, display: "flex", flexDirection: "column", gap: 5 }}>
               {grupo.subestados.map(s => {
-                const ordenS = getOrden(s.key);
+                const ordenS    = getOrden(s.key);
                 const completado = ordenS < ordenActual;
-                const activo = ordenS === ordenActual;
+                const activo     = ordenS === ordenActual;
+
+                // Fechas a mostrar en el subestado activo:
+                // - fecha_ingreso = cuando inició este subestado (ingresó al taller / al estado)
+                // - fecha_listo   = cuando se completó (solo si existe)
+                const mostrarFechas = activo;
+                const esPrimerSubestado = ordenS === 0; // "Pendiente de diagnóstico"
+
                 return (
                   <div key={s.key} style={{
-                    display: "flex", alignItems: "center", gap: 10,
+                    display: "flex", flexDirection: "column",
                     padding: "7px 12px", borderRadius: 8,
                     background: activo ? cfg.bg : completado ? "#f8f8f8" : "#fafafa",
                     border: activo ? `1px solid ${cfg.border}` : "1px solid #f0f0f0",
                   }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                      background: completado ? cfg.color : activo ? cfg.color : "#ebebeb",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 11, color: completado || activo ? "#fff" : "#ccc", fontWeight: 700,
-                    }}>
-                      {completado ? "✓" : activo ? "●" : ""}
-                    </div>
-                    <span style={{
-                      fontSize: 13, fontWeight: activo ? 600 : 400,
-                      color: completado ? "#aaa" : activo ? cfg.text : "#ccc",
-                      textDecoration: completado ? "line-through" : "none",
-                    }}>{s.label}</span>
-                    {activo && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+                        background: completado ? cfg.color : activo ? cfg.color : "#ebebeb",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 11, color: completado || activo ? "#fff" : "#ccc", fontWeight: 700,
+                      }}>
+                        {completado ? "✓" : activo ? "●" : ""}
+                      </div>
                       <span style={{
-                        marginLeft: "auto", background: cfg.color, color: "#fff",
-                        borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500,
-                      }}>Estado actual</span>
+                        fontSize: 13, fontWeight: activo ? 600 : 400,
+                        color: completado ? "#aaa" : activo ? cfg.text : "#ccc",
+                        textDecoration: completado ? "line-through" : "none",
+                        flex: 1,
+                      }}>{s.label}</span>
+                      {activo && (
+                        <span style={{
+                          background: cfg.color, color: "#fff",
+                          borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500,
+                        }}>Estado actual</span>
+                      )}
+                    </div>
+
+                    {/* Fechas debajo del subestado activo */}
+                    {mostrarFechas && (fechaInicioStr || fechaListoStr) && (
+                      <div style={{
+                        marginTop: 8, marginLeft: 30,
+                        display: "flex", gap: 12, flexWrap: "wrap",
+                      }}>
+                        {fechaInicioStr && (
+                          <span style={{
+                            fontSize: 11, color: cfg.text,
+                            background: "#fff", border: `1px solid ${cfg.border}`,
+                            borderRadius: 6, padding: "2px 8px",
+                          }}>
+                            📅 Inicio: {fechaInicioStr}
+                          </span>
+                        )}
+                        {fechaListoStr && (
+                          <span style={{
+                            fontSize: 11, color: cfg.text,
+                            background: "#fff", border: `1px solid ${cfg.border}`,
+                            borderRadius: 6, padding: "2px 8px",
+                          }}>
+                            ✅ Listo: {fechaListoStr}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 );
@@ -527,19 +579,28 @@ function ProgresoCliente({ estadoActual }) {
 // ── Portal Cliente ────────────────────────────────────────────────
 
 function PortalCliente({ onIrInterno }) {
-  const [numeroCaso, setNumeroCaso] = useState("");
+  const [busqueda, setBusqueda] = useState("");
   const [caso, setCaso] = useState(null);
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
 
   async function buscar() {
-    if (!numeroCaso.trim()) return;
+    const q = busqueda.trim();
+    if (!q) return;
     setLoading(true); setErr(""); setCaso(null); setComentarios([]);
     try {
-      const res = await getCasoByNumero(numeroCaso.trim());
-      if (!res) { setErr("No se encontró ningún caso con ese número."); }
-      else {
+      // Intentamos primero por número de caso; si falla o no encuentra, por patente
+      let res = null;
+      if (/^\d+$/.test(q)) {
+        res = await getCasoByNumero(q);
+      }
+      if (!res) {
+        res = await getCasoByPatente(q);
+      }
+      if (!res) {
+        setErr("No se encontró ningún caso con ese número o patente.");
+      } else {
         setCaso(res);
         const comms = await getComentariosByCaso(res.numero_caso);
         setComentarios(comms);
@@ -559,15 +620,15 @@ function PortalCliente({ onIrInterno }) {
       <div style={{ textAlign: "center", marginBottom: 32 }}>
         <div style={{ width: 56, height: 56, borderRadius: 16, background: "#534AB7", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 26 }}>🚗</div>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 700, color: "#1a1a1a" }}>Seguimiento de mi vehículo</h1>
-        <p style={{ margin: 0, fontSize: 14, color: "#888" }}>Ingresa tu número de caso para ver el estado actual</p>
+        <p style={{ margin: 0, fontSize: 14, color: "#888" }}>Ingresa tu número de caso o patente para ver el estado actual</p>
       </div>
 
       <div style={{ display: "flex", gap: 10, width: "100%", maxWidth: 420, marginBottom: 28 }}>
         <input
           style={{ flex: 1, padding: "12px 16px", borderRadius: 12, border: "1px solid #e0e0e0", background: "#fff", color: "#1a1a1a", fontSize: 15, outline: "none" }}
-          placeholder="Número de caso"
-          value={numeroCaso}
-          onChange={e => setNumeroCaso(e.target.value)}
+          placeholder="Número de caso o patente"
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
           onKeyDown={e => e.key === "Enter" && buscar()}
         />
         <button onClick={buscar} disabled={loading} style={{
@@ -600,24 +661,15 @@ function PortalCliente({ onIrInterno }) {
           <p style={{ margin: "4px 0 0", fontSize: 15, color: "#555", fontWeight: 500 }}>🚗 {caso.patente}</p>
           {caso.ubicacion && <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 {caso.ubicacion}</p>}
 
-          <div style={{ display: "flex", gap: 10, margin: "12px 0", flexWrap: "wrap" }}>
-            {caso.fecha_ingreso && (
-              <div style={{ background: "#f8f7f4", borderRadius: 8, padding: "8px 12px", flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>Fecha de ingreso</p>
-                <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600 }}>{formatFechaHora(caso.fecha_ingreso, caso.hora_ingreso)}</p>
-              </div>
-            )}
-            {caso.fecha_listo && (
-              <div style={{ background: "#f8f7f4", borderRadius: 8, padding: "8px 12px", flex: 1 }}>
-                <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>Fecha listo</p>
-                <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600 }}>{formatFechaHora(caso.fecha_listo, caso.hora_listo)}</p>
-              </div>
-            )}
-          </div>
-
-          <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 16 }}>
+          <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 16, marginTop: 16 }}>
             <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "#555" }}>Estado del proceso</p>
-            <ProgresoCliente estadoActual={caso.estado_operativo} />
+            <ProgresoCliente
+              estadoActual={caso.estado_operativo}
+              fechaIngreso={caso.fecha_ingreso}
+              horaIngreso={caso.hora_ingreso}
+              fechaListo={caso.fecha_listo}
+              horaListo={caso.hora_listo}
+            />
           </div>
 
           {comentarios.length > 0 && (
