@@ -209,7 +209,7 @@ function PantallaInicio({ onCliente, onInterno }) {
       {/* Imagen de fondo — parte superior */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: "52%",
-        backgroundImage: "url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80')",
+        backgroundImage: "url('https://cdn.buttercms.com/QQFdpmdKRHS9NlKqG5oU')",
         backgroundSize: "cover", backgroundPosition: "center 40%",
         zIndex: 0,
       }} />
