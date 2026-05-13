@@ -293,6 +293,7 @@ function PantallaInicio({ onCliente, onInterno }) {
           </div>
         </button>
       </div>
+      </div>
     </div>
   );
 }
