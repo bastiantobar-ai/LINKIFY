@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // ── Auth simple por contraseña ────────────────────────────────────
 // Contraseña definida como variable de entorno o hardcoded aquí
-const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavakseguimiento";
+const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2026";
 
 // ── Estado map ───────────────────────────────────────────────────
 
@@ -336,7 +336,7 @@ function LoginInterno({ onLogin, onVolver }) {
 
 // ── Modal comentario ──────────────────────────────────────────────
 
-function ModalComentario({ caso, onSave, onClose, accessToken }) {
+function ModalComentario({ caso, onSave, onClose }) {
   const { subestado, principal } = getMapped(caso.estado_operativo);
   const [comentario, setComentario] = useState("");
   const [creadoPor, setCreadoPor]   = useState("");
@@ -867,7 +867,7 @@ function PanelInterno({ onCerrarSesion }) {
     } finally {
       setLoading(false);
     }
-  }, [accessToken]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
@@ -941,7 +941,7 @@ function PanelInterno({ onCerrarSesion }) {
 
       {modalComentario && (
         <Modal title="Agregar comentario" onClose={() => setModalComentario(null)}>
-          <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} accessToken={accessToken} />
+          <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} />
         </Modal>
       )}
       {modalHistorial && (
