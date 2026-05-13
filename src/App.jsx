@@ -666,7 +666,7 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 
 // ── Progreso cliente ──────────────────────────────────────────────
 
-function ProgresoCliente({ historico }) {
+function ProgresoCliente({ historico, comentarios = [] }) {
   const casoActual  = historico[historico.length - 1];
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
@@ -674,6 +674,16 @@ function ProgresoCliente({ historico }) {
   for (const fila of historico) {
     const k = fila.estado_operativo?.toUpperCase().trim();
     if (k) histMap[k] = fila;
+  }
+
+  // Mapa de estado_operativo → comentarios de ese subestado (ordenados desc)
+  const comentMap = {};
+  for (const c of comentarios) {
+    const k = c.estado?.toUpperCase().trim();
+    if (k) {
+      if (!comentMap[k]) comentMap[k] = [];
+      comentMap[k].push(c);
+    }
   }
 
   const grupos = [
@@ -758,6 +768,23 @@ function ProgresoCliente({ historico }) {
                             ✅ Fin: {listoStr}
                           </span>
                         )}
+                      </div>
+                    )}
+                    {/* Comentarios de este subestado */}
+                    {tieneInfo && comentMap[s.key] && comentMap[s.key].length > 0 && (
+                      <div style={{ marginTop: 8, marginLeft: 30, display: "flex", flexDirection: "column", gap: 6 }}>
+                        {comentMap[s.key].map(c => (
+                          <div key={c.id} style={{
+                            background: "#fff", border: `1px solid ${cfg.border}`,
+                            borderLeft: `3px solid ${cfg.color}`,
+                            borderRadius: "0 8px 8px 0", padding: "8px 12px",
+                          }}>
+                            <p style={{ margin: "0 0 3px", fontSize: 13, color: "#333" }}>💬 {c.comentario}</p>
+                            <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>
+                              {c.creado_por} · {formatDate(c.created_at)}
+                            </p>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -861,7 +888,7 @@ function PortalCliente({ onVolver }) {
 
           <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 16, marginTop: 16 }}>
             <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "#555" }}>Estado del proceso</p>
-            <ProgresoCliente historico={historico} />
+            <ProgresoCliente historico={historico} comentarios={comentarios} />
           </div>
 
           {comentarios.length > 0 && (
