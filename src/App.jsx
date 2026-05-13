@@ -10,8 +10,9 @@ const ESTADO_MAP = {
   "DISPONIBLE PARA TRABAJO":  { principal: "EnTrabajo",   subestado: "Disponible para trabajo",   orden: 3 },
   "TRABAJANDO":               { principal: "EnTrabajo",   subestado: "Trabajando",                orden: 4 },
   "PRUEBA DE RUTA":           { principal: "EnTrabajo",   subestado: "Prueba de ruta",            orden: 5 },
-  "LISTO PARA ENTREGAR":      { principal: "Listo",       subestado: "Listo para entregar",       orden: 6 },
-  "ENTREGADO A CLIENTE":      { principal: "Listo",       subestado: "Entregado",                 orden: 7 },
+  "LISTO":                    { principal: "Listo",       subestado: "Listo",                     orden: 6 },
+  "LISTO PARA ENTREGAR":      { principal: "Listo",       subestado: "Listo para entregar",       orden: 7 },
+  "ENTREGADO A CLIENTE":      { principal: "Listo",       subestado: "Entregado a cliente",       orden: 8 },
 };
 
 const SUBESTADOS_ORDEN = [
@@ -21,14 +22,15 @@ const SUBESTADOS_ORDEN = [
   { key: "DISPONIBLE PARA TRABAJO",  label: "Disponible para trabajo",  principal: "EnTrabajo"   },
   { key: "TRABAJANDO",               label: "Trabajando",               principal: "EnTrabajo"   },
   { key: "PRUEBA DE RUTA",           label: "Prueba de ruta",           principal: "EnTrabajo"   },
+  { key: "LISTO",                    label: "Listo",                    principal: "Listo"       },
   { key: "LISTO PARA ENTREGAR",      label: "Listo para entregar",      principal: "Listo"       },
-  { key: "ENTREGADO A CLIENTE",      label: "Entregado",                principal: "Listo"       },
+  { key: "ENTREGADO A CLIENTE",      label: "Entregado a cliente",      principal: "Listo"       },
 ];
 
 const ESTADOS = {
-  Diagnostico: { label: "Diagnóstico", color: "#7F77DD", bg: "#EEEDFE", text: "#3C3489" },
-  EnTrabajo:   { label: "En Trabajo",  color: "#EF9F27", bg: "#FAEEDA", text: "#633806" },
-  Listo:       { label: "Listo",       color: "#1D9E75", bg: "#E1F5EE", text: "#085041" },
+  Diagnostico: { label: "Diagnóstico", color: "#E24B4A", bg: "#FCEBEB", text: "#A32D2D", border: "#E24B4A30" },
+  EnTrabajo:   { label: "En Trabajo",  color: "#EF9F27", bg: "#FAEEDA", text: "#633806", border: "#EF9F2730" },
+  Listo:       { label: "Listo",       color: "#1D9E75", bg: "#E1F5EE", text: "#085041", border: "#1D9E7530" },
 };
 
 function getMapped(estadoOperativo) {
@@ -39,6 +41,26 @@ function getMapped(estadoOperativo) {
 function getOrden(keyEstado) {
   const entry = ESTADO_MAP[keyEstado?.toUpperCase().trim()];
   return entry ? entry.orden : -1;
+}
+
+function formatFechaHora(fecha, hora) {
+  if (!fecha) return "-";
+  const f = new Date(fecha).toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const h = hora ? hora.slice(0, 5) : null;
+  return h ? `${f} ${h}` : f;
+}
+
+function formatDate(d) {
+  if (!d) return "-";
+  return new Date(d).toLocaleString("es-CL", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+}
+
+function haceHoras(fecha) {
+  if (!fecha) return 999;
+  return (Date.now() - new Date(fecha).getTime()) / (1000 * 60 * 60);
 }
 
 // ── API ──────────────────────────────────────────────────────────
@@ -89,21 +111,6 @@ async function getComentariosByCaso(numero) {
   return res.json();
 }
 
-// ── Helpers ──────────────────────────────────────────────────────
-
-function haceHoras(fecha) {
-  if (!fecha) return 999;
-  return (Date.now() - new Date(fecha).getTime()) / (1000 * 60 * 60);
-}
-
-function formatDate(d) {
-  if (!d) return "-";
-  return new Date(d).toLocaleString("es-CL", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
-  });
-}
-
 // ── UI base ───────────────────────────────────────────────────────
 
 function Badge({ principal }) {
@@ -112,7 +119,7 @@ function Badge({ principal }) {
   return (
     <span style={{
       background: cfg.bg, color: cfg.text,
-      border: `1px solid ${cfg.color}50`,
+      border: `1px solid ${cfg.border}`,
       borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500,
     }}>{cfg.label}</span>
   );
@@ -123,7 +130,7 @@ function SubBadge({ subestado, principal }) {
   return (
     <span style={{
       background: cfg.bg || "#f1efe8", color: cfg.text || "#444",
-      border: `1px solid ${(cfg.color || "#888")}30`,
+      border: `1px solid ${cfg.border || "#88888830"}`,
       borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 500,
     }}>{subestado}</span>
   );
@@ -192,9 +199,7 @@ function ModalComentario({ caso, onSave, onClose }) {
         <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
           Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong>
         </p>
-        <div style={{ marginTop: 6 }}>
-          <SubBadge subestado={subestado} principal={principal} />
-        </div>
+        <div style={{ marginTop: 6 }}><SubBadge subestado={subestado} principal={principal} /></div>
       </div>
       <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>Tu nombre</label>
       <input style={inputStyle} value={creadoPor} onChange={e => setCreadoPor(e.target.value)} placeholder="Ej: Juan Pérez" />
@@ -257,16 +262,18 @@ function ModalHistorial({ caso, comentariosDeCaso, onClose }) {
 
 // ── Tarjeta de caso ───────────────────────────────────────────────
 
-function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial, alerta }) {
+function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial, alerta, colorBorde }) {
   const { principal, subestado } = getMapped(caso.estado_operativo);
   const cfg = ESTADOS[principal] || {};
   const ultimoComentario = comentariosDeCaso[0];
+  const borderColor = colorBorde ? cfg.color : (alerta === "advertencia" ? "#E24B4A" : "#e0e0e0");
+  const bgCard = colorBorde ? cfg.bg + "55" : "#fff";
 
   return (
     <div style={{
-      background: "#fff",
-      border: `1px solid ${alerta === "advertencia" ? "#E24B4A30" : "#ececec"}`,
-      borderLeft: `4px solid ${cfg.color || "#ccc"}`,
+      background: bgCard,
+      border: `1px solid ${colorBorde ? cfg.border : alerta === "advertencia" ? "#E24B4A30" : "#ececec"}`,
+      borderLeft: `4px solid ${borderColor}`,
       borderRadius: 12, padding: "14px 16px",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
@@ -284,13 +291,20 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial
             )}
             {alerta === "advertencia" && (
               <span style={{ background: "#FCEBEB", color: "#A32D2D", border: "1px solid #E24B4A40", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500 }}>
-                ⚠ Sin comentario
+                ⚠ Sin comentario +24h
               </span>
             )}
           </div>
-          <div style={{ display: "flex", gap: 14, marginBottom: 6, flexWrap: "wrap" }}>
-            {caso.fecha_listo && <span style={{ fontSize: 12, color: "#bbb" }}>📅 {formatDate(caso.fecha_listo)}</span>}
-            {caso.ubicacion && <span style={{ fontSize: 12, color: "#bbb" }}>📍 {caso.ubicacion}</span>}
+          <div style={{ display: "flex", gap: 16, marginBottom: 6, flexWrap: "wrap" }}>
+            {caso.fecha_ingreso && (
+              <span style={{ fontSize: 12, color: "#aaa" }}>📅 Ingreso: {formatFechaHora(caso.fecha_ingreso, caso.hora_ingreso)}</span>
+            )}
+            {caso.fecha_listo && (
+              <span style={{ fontSize: 12, color: "#aaa" }}>✅ Listo: {formatFechaHora(caso.fecha_listo, caso.hora_listo)}</span>
+            )}
+            {caso.ubicacion && (
+              <span style={{ fontSize: 12, color: "#aaa" }}>📍 {caso.ubicacion}</span>
+            )}
           </div>
           {ultimoComentario
             ? <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
@@ -336,7 +350,9 @@ function TabPendientes({ casos, comentariosMap, onAgregarComentario, onVerHistor
             Casos con cambio de estado sin comentario — {pendientes.length} caso{pendientes.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <button onClick={onRefresh} style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid #e0e0e0", background: "transparent", cursor: "pointer", fontSize: 13, color: "#555" }}>↻ Actualizar</button>
+        <button onClick={onRefresh} style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid #e0e0e0", background: "transparent", cursor: "pointer", fontSize: 13, color: "#555" }}>
+          ↻ Actualizar
+        </button>
       </div>
       {pendientes.length === 0
         ? <div style={{ textAlign: "center", padding: "48px 0", color: "#ccc" }}>
@@ -347,10 +363,11 @@ function TabPendientes({ casos, comentariosMap, onAgregarComentario, onVerHistor
             {pendientes.map(c => {
               const comentariosDeCaso = comentariosMap[c.numero_caso] || [];
               const ultimo = comentariosDeCaso[0];
-              const alerta = haceHoras(ultimo?.created_at) < 3 ? "urgente" : "advertencia";
+              const alerta = haceHoras(ultimo?.created_at) >= 24 ? "advertencia" : "urgente";
               return (
                 <CasoCard key={c.id_sistema} caso={c} comentariosDeCaso={comentariosDeCaso}
-                  onAgregarComentario={onAgregarComentario} onVerHistorial={onVerHistorial} alerta={alerta} />
+                  onAgregarComentario={onAgregarComentario} onVerHistorial={onVerHistorial}
+                  alerta={alerta} colorBorde={false} />
               );
             })}
           </div>
@@ -389,11 +406,11 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
         {[
           { label: "Total activos", value: casos.filter(c => c.estado_operativo?.toUpperCase().trim() !== "ENTREGADO A CLIENTE").length, color: "#534AB7", bg: "#EEEDFE" },
-          { label: "Diagnóstico", value: conteos["Diagnostico"] || 0, color: "#7F77DD", bg: "#EEEDFE" },
-          { label: "En Trabajo", value: conteos["EnTrabajo"] || 0, color: "#EF9F27", bg: "#FAEEDA" },
-          { label: "Listos", value: conteos["Listo"] || 0, color: "#1D9E75", bg: "#E1F5EE" },
+          { label: "Diagnóstico",   value: conteos["Diagnostico"] || 0, color: ESTADOS.Diagnostico.color, bg: ESTADOS.Diagnostico.bg },
+          { label: "En Trabajo",    value: conteos["EnTrabajo"]   || 0, color: ESTADOS.EnTrabajo.color,   bg: ESTADOS.EnTrabajo.bg   },
+          { label: "Listos",        value: conteos["Listo"]       || 0, color: ESTADOS.Listo.color,       bg: ESTADOS.Listo.bg       },
         ].map(m => (
-          <div key={m.label} style={{ background: m.bg, borderRadius: 10, padding: "12px 16px", border: `1px solid ${m.color}20` }}>
+          <div key={m.label} style={{ background: m.bg, borderRadius: 10, padding: "12px 16px", border: `1px solid ${m.color}25` }}>
             <p style={{ margin: "0 0 4px", fontSize: 12, color: m.color, fontWeight: 500 }}>{m.label}</p>
             <p style={{ margin: 0, fontSize: 26, fontWeight: 700, color: m.color }}>{m.value}</p>
           </div>
@@ -415,8 +432,10 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
         ? <p style={{ color: "#ccc", textAlign: "center", marginTop: 40, fontSize: 14 }}>Sin casos para mostrar</p>
         : <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {backlog.map(c => (
-              <CasoCard key={c.id_sistema} caso={c} comentariosDeCaso={comentariosMap[c.numero_caso] || []}
-                onAgregarComentario={onAgregarComentario} onVerHistorial={onVerHistorial} alerta={null} />
+              <CasoCard key={c.id_sistema} caso={c}
+                comentariosDeCaso={comentariosMap[c.numero_caso] || []}
+                onAgregarComentario={onAgregarComentario} onVerHistorial={onVerHistorial}
+                alerta={null} colorBorde={true} />
             ))}
           </div>
       }
@@ -431,8 +450,8 @@ function ProgresoCliente({ estadoActual }) {
 
   const grupos = [
     { key: "Diagnostico", label: "Diagnóstico", subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Diagnostico") },
-    { key: "EnTrabajo",   label: "En Trabajo",  subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "EnTrabajo") },
-    { key: "Listo",       label: "Listo",       subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Listo") },
+    { key: "EnTrabajo",   label: "En Trabajo",  subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "EnTrabajo")   },
+    { key: "Listo",       label: "Listo",       subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Listo")       },
   ];
 
   return (
@@ -455,7 +474,7 @@ function ProgresoCliente({ estadoActual }) {
               </div>
               <span style={{ fontWeight: 600, fontSize: 14, color: grupoActivo ? cfg.text : "#ccc" }}>{grupo.label}</span>
               {grupoCompleto && (
-                <span style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.color}40`, borderRadius: 20, padding: "1px 8px", fontSize: 11, fontWeight: 500 }}>
+                <span style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "1px 8px", fontSize: 11, fontWeight: 500 }}>
                   Completado ✓
                 </span>
               )}
@@ -470,7 +489,7 @@ function ProgresoCliente({ estadoActual }) {
                     display: "flex", alignItems: "center", gap: 10,
                     padding: "7px 12px", borderRadius: 8,
                     background: activo ? cfg.bg : completado ? "#f8f8f8" : "#fafafa",
-                    border: activo ? `1px solid ${cfg.color}50` : "1px solid #f0f0f0",
+                    border: activo ? `1px solid ${cfg.border}` : "1px solid #f0f0f0",
                   }}>
                     <div style={{
                       width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
@@ -545,11 +564,7 @@ function PortalCliente({ onIrInterno }) {
 
       <div style={{ display: "flex", gap: 10, width: "100%", maxWidth: 420, marginBottom: 28 }}>
         <input
-          style={{
-            flex: 1, padding: "12px 16px", borderRadius: 12,
-            border: "1px solid #e0e0e0", background: "#fff",
-            color: "#1a1a1a", fontSize: 15, outline: "none",
-          }}
+          style={{ flex: 1, padding: "12px 16px", borderRadius: 12, border: "1px solid #e0e0e0", background: "#fff", color: "#1a1a1a", fontSize: 15, outline: "none" }}
           placeholder="Número de caso"
           value={numeroCaso}
           onChange={e => setNumeroCaso(e.target.value)}
@@ -585,20 +600,28 @@ function PortalCliente({ onIrInterno }) {
           <p style={{ margin: "4px 0 0", fontSize: 15, color: "#555", fontWeight: 500 }}>🚗 {caso.patente}</p>
           {caso.ubicacion && <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 {caso.ubicacion}</p>}
 
-          <div style={{ borderTop: "1px solid #f0f0f0", margin: "16px 0 0", paddingTop: 16 }}>
+          <div style={{ display: "flex", gap: 10, margin: "12px 0", flexWrap: "wrap" }}>
+            {caso.fecha_ingreso && (
+              <div style={{ background: "#f8f7f4", borderRadius: 8, padding: "8px 12px", flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>Fecha de ingreso</p>
+                <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600 }}>{formatFechaHora(caso.fecha_ingreso, caso.hora_ingreso)}</p>
+              </div>
+            )}
+            {caso.fecha_listo && (
+              <div style={{ background: "#f8f7f4", borderRadius: 8, padding: "8px 12px", flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>Fecha listo</p>
+                <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600 }}>{formatFechaHora(caso.fecha_listo, caso.hora_listo)}</p>
+              </div>
+            )}
+          </div>
+
+          <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 16 }}>
             <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "#555" }}>Estado del proceso</p>
             <ProgresoCliente estadoActual={caso.estado_operativo} />
           </div>
 
-          {caso.fecha_listo && (
-            <div style={{ background: "#f8f7f4", borderRadius: 10, padding: "10px 14px", marginTop: 8, marginBottom: 12 }}>
-              <p style={{ margin: 0, fontSize: 12, color: "#aaa" }}>Fecha estimada de entrega</p>
-              <p style={{ margin: "4px 0 0", fontSize: 14, fontWeight: 600 }}>{formatDate(caso.fecha_listo)}</p>
-            </div>
-          )}
-
           {comentarios.length > 0 && (
-            <div style={{ background: "#f0eefb", border: "1px solid #7F77DD30", borderRadius: 10, padding: "12px 14px" }}>
+            <div style={{ background: "#f0eefb", border: "1px solid #7F77DD30", borderRadius: 10, padding: "12px 14px", marginTop: 8 }}>
               <p style={{ margin: "0 0 6px", fontSize: 12, color: "#7F77DD", fontWeight: 600 }}>💬 Última actualización del equipo</p>
               <p style={{ margin: "0 0 4px", fontSize: 14, color: "#333" }}>{comentarios[0].comentario}</p>
               <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{formatDate(comentarios[0].created_at)}</p>
@@ -726,7 +749,7 @@ function PanelInterno({ onIrCliente }) {
   );
 }
 
-// ── App principal ─────────────────────────────────────────────────
+// ── App ───────────────────────────────────────────────────────────
 
 export default function App() {
   const [vista, setVista] = useState("cliente");
