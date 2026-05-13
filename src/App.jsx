@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // ── Auth simple por contraseña ────────────────────────────────────
 // Contraseña definida como variable de entorno o hardcoded aquí
-const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2026";
+const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2024";
 
 // ── Estado map ───────────────────────────────────────────────────
 
@@ -38,6 +38,23 @@ const ESTADOS = {
   EnTrabajo:   { label: "En Trabajo",  color: "#EF9F27", bg: "#FAEEDA", text: "#633806", border: "#EF9F2730" },
   Listo:       { label: "Listo",       color: "#1D9E75", bg: "#E1F5EE", text: "#085041", border: "#1D9E7530" },
 };
+
+// Kavak brand colors
+const KAVAK_BLUE = "#0066FF";
+const KAVAK_BLUE_DARK = "#0052CC";
+const KAVAK_BLUE_LIGHT = "#E5F0FF";
+
+
+// ── Kavak Logo ────────────────────────────────────────────────────
+
+function KavakLogo({ size = 32, dark = false }) {
+  return (
+    <svg height={size} viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="2" y="32" fontFamily="Arial Black, Arial, sans-serif" fontSize="34" fontWeight="900"
+        fill={dark ? "#0066FF" : "#ffffff"} letterSpacing="-1">KAVAK</text>
+    </svg>
+  );
+}
 
 function getMapped(estadoOperativo) {
   const key = estadoOperativo?.toUpperCase().trim();
@@ -184,19 +201,21 @@ function Modal({ title, onClose, children }) {
 function PantallaInicio({ onCliente, onInterno }) {
   return (
     <div style={{
-      minHeight: "100vh", background: "#f5f4f1",
+      minHeight: "100vh", background: "#f8f9fa",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       padding: "32px 16px",
     }}>
       {/* Logo / header */}
       <div style={{ textAlign: "center", marginBottom: 48 }}>
         <div style={{
-          width: 64, height: 64, borderRadius: 18, background: "#534AB7",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          margin: "0 auto 16px", fontSize: 30,
-        }}>🚗</div>
+          background: KAVAK_BLUE, borderRadius: 20, padding: "16px 28px",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          margin: "0 auto 20px",
+        }}>
+          <KavakLogo size={28} dark={false} />
+        </div>
         <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#1a1a1a", letterSpacing: -0.5 }}>
-          Post-Venta Kavak
+          Sigue tu caso
         </h1>
         <p style={{ margin: 0, fontSize: 15, color: "#999" }}>
           Selecciona cómo deseas ingresar
@@ -217,7 +236,7 @@ function PantallaInicio({ onCliente, onInterno }) {
           onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "none"; }}
         >
           <div style={{
-            width: 44, height: 44, borderRadius: 12, background: "#EEEDFE",
+            width: 44, height: 44, borderRadius: 12, background: KAVAK_BLUE_LIGHT,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 22, marginBottom: 14,
           }}>👤</div>
@@ -227,7 +246,7 @@ function PantallaInicio({ onCliente, onInterno }) {
           </p>
           <div style={{
             marginTop: 18, display: "inline-flex", alignItems: "center", gap: 6,
-            fontSize: 13, fontWeight: 600, color: "#534AB7",
+            fontSize: 13, fontWeight: 600, color: KAVAK_BLUE,
           }}>
             Consultar estado →
           </div>
@@ -235,9 +254,9 @@ function PantallaInicio({ onCliente, onInterno }) {
 
         {/* Interno */}
         <button onClick={onInterno} style={{
-          flex: "1 1 220px", background: "#534AB7", border: "none",
+          flex: "1 1 220px", background: KAVAK_BLUE, border: "none",
           borderRadius: 16, padding: "28px 24px", cursor: "pointer", textAlign: "left",
-          boxShadow: "0 2px 12px rgba(83,74,183,0.25)",
+          boxShadow: `0 2px 12px ${KAVAK_BLUE}40`,
           transition: "box-shadow 0.15s, transform 0.15s",
         }}
           onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(83,74,183,0.4)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
@@ -286,7 +305,7 @@ function LoginInterno({ onLogin, onVolver }) {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "#f5f4f1",
+      minHeight: "100vh", background: "#f8f9fa",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       padding: "32px 16px",
     }}>
@@ -297,10 +316,12 @@ function LoginInterno({ onLogin, onVolver }) {
       }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{
-            width: 52, height: 52, borderRadius: 14, background: "#534AB7",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            margin: "0 auto 12px", fontSize: 24,
-          }}>🔧</div>
+            background: KAVAK_BLUE, borderRadius: 14, padding: "10px 18px",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 16px",
+          }}>
+            <KavakLogo size={22} dark={false} />
+          </div>
           <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
             Acceso internos
           </h2>
@@ -319,7 +340,7 @@ function LoginInterno({ onLogin, onVolver }) {
         {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "8px 0 0" }}>{err}</p>}
         <button onClick={handleLogin} style={{
           width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
-          background: "#534AB7", color: "#fff", fontWeight: 600,
+          background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
           cursor: "pointer", fontSize: 15, marginTop: 12,
         }}>
           Ingresar
@@ -386,7 +407,7 @@ function ModalComentario({ caso, onSave, onClose }) {
       <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
         <button onClick={handleSave} disabled={saving} style={{
           flex: 1, padding: "10px 0", borderRadius: 8, border: "none",
-          background: "#534AB7", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14,
+          background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14,
         }}>{saving ? "Guardando..." : "Guardar comentario"}</button>
         <button onClick={onClose} style={{
           flex: 1, padding: "10px 0", borderRadius: 8,
@@ -494,7 +515,7 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => onAgregarComentario(caso)} style={{
             padding: "6px 12px", borderRadius: 7, border: "none",
-            background: "#534AB7", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 500,
+            background: KAVAK_BLUE, color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 500,
           }}>+ Comentario</button>
           {comentariosDeCaso.length > 0 && (
             <button onClick={() => onVerHistorial(caso)} style={{
@@ -582,7 +603,7 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
         {[
-          { label: "Total activos", value: casos.filter(c => c.estado_operativo?.toUpperCase().trim() !== "ENTREGADO A CLIENTE").length, color: "#534AB7", bg: "#EEEDFE" },
+          { label: "Total activos", value: casos.filter(c => c.estado_operativo?.toUpperCase().trim() !== "ENTREGADO A CLIENTE").length, color: KAVAK_BLUE, bg: KAVAK_BLUE_LIGHT },
           { label: "Diagnóstico",   value: conteos["Diagnostico"] || 0, color: ESTADOS.Diagnostico.color, bg: ESTADOS.Diagnostico.bg },
           { label: "En Trabajo",    value: conteos["EnTrabajo"]   || 0, color: ESTADOS.EnTrabajo.color,   bg: ESTADOS.EnTrabajo.bg   },
           { label: "Listos",        value: conteos["Listo"]       || 0, color: ESTADOS.Listo.color,       bg: ESTADOS.Listo.bg       },
@@ -768,9 +789,11 @@ function PortalCliente({ onVolver }) {
   const cfg    = mapped ? ESTADOS[mapped.principal] : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5f4f1", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 16px 48px" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 16px 48px" }}>
       <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ width: 56, height: 56, borderRadius: 16, background: "#534AB7", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 26 }}>🚗</div>
+        <div style={{ background: KAVAK_BLUE, borderRadius: 16, padding: "10px 20px", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+          <KavakLogo size={24} dark={false} />
+        </div>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 700, color: "#1a1a1a" }}>Seguimiento de mi vehículo</h1>
         <p style={{ margin: 0, fontSize: 14, color: "#888" }}>Ingresa tu número de caso o patente para ver el estado actual</p>
       </div>
@@ -785,7 +808,7 @@ function PortalCliente({ onVolver }) {
         />
         <button onClick={buscar} disabled={loading} style={{
           padding: "12px 22px", borderRadius: 12, border: "none",
-          background: "#534AB7", color: "#fff", fontWeight: 600,
+          background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
           cursor: loading ? "wait" : "pointer", fontSize: 14,
         }}>{loading ? "..." : "Buscar"}</button>
       </div>
@@ -819,8 +842,8 @@ function PortalCliente({ onVolver }) {
           </div>
 
           {comentarios.length > 0 && (
-            <div style={{ background: "#f0eefb", border: "1px solid #7F77DD30", borderRadius: 10, padding: "12px 14px", marginTop: 8 }}>
-              <p style={{ margin: "0 0 6px", fontSize: 12, color: "#7F77DD", fontWeight: 600 }}>💬 Última actualización del equipo</p>
+            <div style={{ background: KAVAK_BLUE_LIGHT, border: `1px solid ${KAVAK_BLUE}20`, borderRadius: 10, padding: "12px 14px", marginTop: 8 }}>
+              <p style={{ margin: "0 0 6px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>💬 Última actualización del equipo</p>
               <p style={{ margin: "0 0 4px", fontSize: 14, color: "#333" }}>{comentarios[0].comentario}</p>
               <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{formatDate(comentarios[0].created_at)}</p>
             </div>
@@ -879,14 +902,14 @@ function PanelInterno({ onCerrarSesion }) {
   }).length;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5f4f1" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f9fa" }}>
       <div style={{
         background: "#fff", borderBottom: "1px solid #ececec",
         padding: "0 24px", display: "flex", alignItems: "center",
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <div style={{ padding: "14px 20px 14px 0", marginRight: 16, borderRight: "1px solid #ececec" }}>
-          <span style={{ fontWeight: 700, fontSize: 16, color: "#534AB7" }}>Post-Venta</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><KavakLogo size={18} dark={true} /><span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a" }}>Sigue tu caso</span></div>
         </div>
         {[
           { key: "backlog", label: "Backlog" },
@@ -895,8 +918,8 @@ function PanelInterno({ onCerrarSesion }) {
           <button key={t.key} onClick={() => setTab(t.key)} style={{
             padding: "16px 18px", background: "none", border: "none", cursor: "pointer",
             fontSize: 14, fontWeight: tab === t.key ? 600 : 400,
-            color: tab === t.key ? "#534AB7" : "#888",
-            borderBottom: tab === t.key ? "2px solid #534AB7" : "2px solid transparent",
+            color: tab === t.key ? KAVAK_BLUE : "#888",
+            borderBottom: tab === t.key ? "2px solid ${KAVAK_BLUE}" : "2px solid transparent",
             display: "flex", alignItems: "center", gap: 6,
           }}>
             {t.label}
