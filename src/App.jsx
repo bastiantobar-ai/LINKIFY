@@ -5,14 +5,20 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // ── Supabase Auth ─────────────────────────────────────────────────
 
+// Envía magic link — el usuario hace click en el correo y vuelve con token en el hash
 async function authSignInWithOtp(email) {
+  const redirectTo = window.location.origin + window.location.pathname;
   const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
     method: "POST",
     headers: {
       "apikey": SUPABASE_ANON_KEY,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ email, create_user: false }),
+    body: JSON.stringify({
+      email,
+      create_user: false,
+      options: { emailRedirectTo: redirectTo },
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -21,21 +27,33 @@ async function authSignInWithOtp(email) {
   return true;
 }
 
-async function authVerifyOtp(email, token) {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
-    method: "POST",
+// Parsea el hash de la URL después del redirect del magic link
+// Supabase devuelve: #access_token=...&token_type=bearer&...
+function parseHashToken() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) return null;
+  const params = new URLSearchParams(hash);
+  const accessToken = params.get("access_token");
+  const type = params.get("type");
+  if (accessToken && (type === "magiclink" || type === "signup" || params.get("token_type") === "bearer")) {
+    // Limpiar el hash de la URL
+    window.history.replaceState(null, "", window.location.pathname);
+    return accessToken;
+  }
+  return null;
+}
+
+// Obtiene el email del usuario a partir del access token
+async function getUserEmail(accessToken) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: {
       "apikey": SUPABASE_ANON_KEY,
-      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`,
     },
-    body: JSON.stringify({ email, token, type: "magiclink" }),
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.msg || err.message || "Código inválido o expirado");
-  }
+  if (!res.ok) return null;
   const data = await res.json();
-  return data.access_token || null;
+  return data.email || null;
 }
 
 async function authSignOut(accessToken) {
@@ -308,12 +326,10 @@ function PantallaInicio({ onCliente, onInterno }) {
 // ── Login internos (magic link) ───────────────────────────────────
 
 function LoginInterno({ onLogin, onVolver }) {
-  const [email, setEmail]       = useState("");
-  const [step, setStep]         = useState("email"); // "email" | "code"
-  const [code, setCode]         = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [err, setErr]           = useState("");
-  const [enviado, setEnviado]   = useState(false);
+  const [email, setEmail]     = useState("");
+  const [loading, setLoading] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+  const [err, setErr]         = useState("");
 
   async function handleSendLink() {
     const e = email.trim().toLowerCase();
@@ -323,24 +339,6 @@ function LoginInterno({ onLogin, onVolver }) {
     try {
       await authSignInWithOtp(e);
       setEnviado(true);
-      setStep("code");
-    } catch (ex) {
-      setErr(ex.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleVerify() {
-    if (!code.trim()) { setErr("Ingresa el código recibido"); return; }
-    setLoading(true); setErr("");
-    try {
-      const token = await authVerifyOtp(email.trim().toLowerCase(), code.trim());
-      if (token) {
-        onLogin(token, email.trim().toLowerCase());
-      } else {
-        setErr("No se pudo verificar. Intenta de nuevo.");
-      }
     } catch (ex) {
       setErr(ex.message);
     } finally {
@@ -352,11 +350,6 @@ function LoginInterno({ onLogin, onVolver }) {
     width: "100%", padding: "12px 14px", borderRadius: 10,
     border: "1px solid #e0e0e0", background: "#fafafa",
     color: "#1a1a1a", fontSize: 15, boxSizing: "border-box", outline: "none",
-  };
-  const btnPrimary = {
-    width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
-    background: "#534AB7", color: "#fff", fontWeight: 600,
-    cursor: loading ? "wait" : "pointer", fontSize: 15, marginTop: 12,
   };
 
   return (
@@ -370,7 +363,6 @@ function LoginInterno({ onLogin, onVolver }) {
         borderRadius: 18, padding: "36px 32px",
         boxShadow: "0 4px 32px rgba(0,0,0,0.08)",
       }}>
-        {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{
             width: 52, height: 52, borderRadius: 14, background: "#534AB7",
@@ -378,16 +370,14 @@ function LoginInterno({ onLogin, onVolver }) {
             margin: "0 auto 12px", fontSize: 24,
           }}>🔧</div>
           <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
-            {step === "email" ? "Acceso internos" : "Revisa tu correo"}
+            {enviado ? "Revisa tu correo" : "Acceso internos"}
           </h2>
           <p style={{ margin: 0, fontSize: 13, color: "#999" }}>
-            {step === "email"
-              ? "Ingresa tu correo @kavak.com"
-              : `Ingresaste el código de 6 dígitos enviado a ${email}`}
+            {enviado ? `Enviamos un link a ${email}` : "Ingresa tu correo @kavak.com"}
           </p>
         </div>
 
-        {step === "email" && (
+        {!enviado ? (
           <>
             <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Correo Kavak</label>
             <input
@@ -398,40 +388,31 @@ function LoginInterno({ onLogin, onVolver }) {
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleSendLink()}
             />
-            {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 8, margin: "8px 0 0" }}>{err}</p>}
-            <button onClick={handleSendLink} disabled={loading} style={btnPrimary}>
+            {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "8px 0 0" }}>{err}</p>}
+            <button onClick={handleSendLink} disabled={loading} style={{
+              width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
+              background: "#534AB7", color: "#fff", fontWeight: 600,
+              cursor: loading ? "wait" : "pointer", fontSize: 15, marginTop: 12,
+            }}>
               {loading ? "Enviando..." : "Enviar magic link"}
             </button>
           </>
-        )}
-
-        {step === "code" && (
+        ) : (
           <>
-            <div style={{ background: "#E1F5EE", border: "1px solid #1D9E7530", borderRadius: 10, padding: "10px 14px", marginBottom: 18 }}>
-              <p style={{ margin: 0, fontSize: 13, color: "#085041" }}>
-                ✅ Magic link enviado. Revisa tu bandeja de entrada y copia el código de 6 dígitos.
+            <div style={{ background: "#E1F5EE", border: "1px solid #1D9E7530", borderRadius: 12, padding: "20px 16px", textAlign: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📬</div>
+              <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 600, color: "#085041" }}>
+                Link enviado
+              </p>
+              <p style={{ margin: 0, fontSize: 13, color: "#1D9E75", lineHeight: 1.5 }}>
+                Haz click en el link del correo para ingresar al panel. Puedes cerrar esta pestaña.
               </p>
             </div>
-            <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Código de verificación</label>
-            <input
-              style={{ ...inputStyle, letterSpacing: 4, fontSize: 20, textAlign: "center" }}
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              placeholder="000000"
-              value={code}
-              onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
-              onKeyDown={e => e.key === "Enter" && handleVerify()}
-            />
-            {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 8, margin: "8px 0 0" }}>{err}</p>}
-            <button onClick={handleVerify} disabled={loading} style={btnPrimary}>
-              {loading ? "Verificando..." : "Ingresar"}
-            </button>
-            <button onClick={() => { setStep("email"); setCode(""); setErr(""); }} style={{
-              width: "100%", marginTop: 8, padding: "10px 0", borderRadius: 10,
+            <button onClick={() => { setEnviado(false); setEmail(""); setErr(""); }} style={{
+              width: "100%", padding: "10px 0", borderRadius: 10,
               border: "1px solid #e0e0e0", background: "transparent",
               color: "#888", cursor: "pointer", fontSize: 13,
-            }}>Reenviar código</button>
+            }}>Reenviar link</button>
           </>
         )}
 
@@ -1077,9 +1058,26 @@ function PanelInterno({ accessToken, userEmail, onCerrarSesion }) {
 
 export default function App() {
   // vista: "inicio" | "cliente" | "login" | "interno"
-  const [vista, setVista]           = useState("inicio");
+  const [vista, setVista]             = useState("inicio");
   const [accessToken, setAccessToken] = useState(null);
-  const [userEmail, setUserEmail]   = useState("");
+  const [userEmail, setUserEmail]     = useState("");
+
+  // Al cargar, detecta si venimos de un magic link (hash en la URL)
+  useEffect(() => {
+    const token = parseHashToken();
+    if (token) {
+      getUserEmail(token).then(email => {
+        if (email && email.endsWith("@kavak.com")) {
+          setAccessToken(token);
+          setUserEmail(email);
+          setVista("interno");
+        } else {
+          // Email no es @kavak.com — rechazar
+          setVista("login");
+        }
+      });
+    }
+  }, []);
 
   function handleLogin(token, email) {
     setAccessToken(token);
