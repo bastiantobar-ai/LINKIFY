@@ -206,37 +206,36 @@ function PantallaInicio({ onCliente, onInterno }) {
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column" }}>
 
-      {/* Sección superior — logo y título sobre fondo blanco */}
-      <div style={{ textAlign: "center", padding: "48px 16px 32px", background: "#fff" }}>
-        <div style={{
-          background: KAVAK_BLUE, borderRadius: 16, padding: "14px 24px",
-          display: "inline-block", marginBottom: 20,
-        }}>
-          <KavakLogo dark={false} />
-        </div>
-        <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#1a1a1a", letterSpacing: -0.5 }}>
-          Sigue tu caso
-        </h1>
-        <p style={{ margin: 0, fontSize: 15, color: "#999" }}>
-          Selecciona cómo deseas ingresar
-        </p>
-      </div>
-
-      {/* Imagen separadora */}
+      {/* Hero con imagen y card blanco encima */}
       <div style={{
-        width: "100%", height: 220,
+        position: "relative", width: "100%", height: 300,
         backgroundImage: "url('https://cdn.buttercms.com/QQFdpmdKRHS9NlKqG5oU')",
         backgroundSize: "cover", backgroundPosition: "center 50%",
-      }} />
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <div style={{
+          background: "#fff", borderRadius: 20, padding: "24px 40px",
+          textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+          display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 10,
+        }}>
+          <div style={{ background: KAVAK_BLUE, borderRadius: 12, padding: "10px 22px", display: "inline-block" }}>
+            <KavakLogo dark={false} />
+          </div>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a1a", letterSpacing: -0.5 }}>
+            Sigue tu caso
+          </h1>
+          <p style={{ margin: 0, fontSize: 14, color: "#999" }}>
+            Selecciona cómo deseas ingresar
+          </p>
+        </div>
+      </div>
 
-      {/* Sección inferior — tarjetas sobre fondo gris */}
+      {/* Tarjetas */}
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        padding: "40px 16px 48px",
+        padding: "36px 16px 48px",
       }}>
-      <div style={{ textAlign: "center", marginBottom: 0 }}>
-
       {/* Tarjetas */}
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 560 }}>
 
@@ -293,7 +292,6 @@ function PantallaInicio({ onCliente, onInterno }) {
             Iniciar sesión →
           </div>
         </button>
-      </div>
       </div>
     </div>
   );
