@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // ── Auth simple por contraseña ────────────────────────────────────
 // Contraseña definida como variable de entorno o hardcoded aquí
-const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2024";
+const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavakseguimiento";
 
 // ── Estado map ───────────────────────────────────────────────────
 
