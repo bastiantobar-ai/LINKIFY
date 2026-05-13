@@ -204,11 +204,34 @@ function Modal({ title, onClose, children }) {
 
 function PantallaInicio({ onCliente, onInterno }) {
   return (
-    <div style={{
-      minHeight: "100vh", background: "#f8f9fa",
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: "32px 16px",
-    }}>
+    <div style={{ minHeight: "100vh", position: "relative", overflow: "hidden" }}>
+
+      {/* Imagen de fondo — parte superior */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: "52%",
+        backgroundImage: "url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&q=80')",
+        backgroundSize: "cover", backgroundPosition: "center 40%",
+        zIndex: 0,
+      }} />
+      {/* Overlay degradado sobre la imagen */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: "52%",
+        background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(248,249,250,0.0) 70%, rgba(248,249,250,1) 100%)",
+        zIndex: 1,
+      }} />
+      {/* Fondo blanco parte inferior */}
+      <div style={{
+        position: "absolute", top: "48%", left: 0, right: 0, bottom: 0,
+        background: "#f8f9fa", zIndex: 0,
+      }} />
+
+      {/* Contenido */}
+      <div style={{
+        position: "relative", zIndex: 2,
+        minHeight: "100vh",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "32px 16px",
+      }}>
       {/* Logo / header */}
       <div style={{ textAlign: "center", marginBottom: 48 }}>
         <div style={{
@@ -282,6 +305,7 @@ function PantallaInicio({ onCliente, onInterno }) {
             Iniciar sesión →
           </div>
         </button>
+      </div>
       </div>
     </div>
   );
