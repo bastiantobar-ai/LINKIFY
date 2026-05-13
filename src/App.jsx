@@ -204,40 +204,13 @@ function Modal({ title, onClose, children }) {
 
 function PantallaInicio({ onCliente, onInterno }) {
   return (
-    <div style={{ minHeight: "100vh", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column" }}>
 
-      {/* Imagen de fondo — parte superior */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: "52%",
-        backgroundImage: "url('https://cdn.buttercms.com/QQFdpmdKRHS9NlKqG5oU')",
-        backgroundSize: "cover", backgroundPosition: "center 40%",
-        zIndex: 0,
-      }} />
-      {/* Overlay degradado sobre la imagen */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: "52%",
-        background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(248,249,250,0.0) 70%, rgba(248,249,250,1) 100%)",
-        zIndex: 1,
-      }} />
-      {/* Fondo blanco parte inferior */}
-      <div style={{
-        position: "absolute", top: "48%", left: 0, right: 0, bottom: 0,
-        background: "#f8f9fa", zIndex: 0,
-      }} />
-
-      {/* Contenido */}
-      <div style={{
-        position: "relative", zIndex: 2,
-        minHeight: "100vh",
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        padding: "32px 16px",
-      }}>
-      {/* Logo / header */}
-      <div style={{ textAlign: "center", marginBottom: 48 }}>
+      {/* Sección superior — logo y título sobre fondo blanco */}
+      <div style={{ textAlign: "center", padding: "48px 16px 32px", background: "#fff" }}>
         <div style={{
           background: KAVAK_BLUE, borderRadius: 16, padding: "14px 24px",
-          display: "inline-block",
-          margin: "0 auto 20px",
+          display: "inline-block", marginBottom: 20,
         }}>
           <KavakLogo dark={false} />
         </div>
@@ -248,6 +221,21 @@ function PantallaInicio({ onCliente, onInterno }) {
           Selecciona cómo deseas ingresar
         </p>
       </div>
+
+      {/* Imagen separadora */}
+      <div style={{
+        width: "100%", height: 220,
+        backgroundImage: "url('https://cdn.buttercms.com/QQFdpmdKRHS9NlKqG5oU')",
+        backgroundSize: "cover", backgroundPosition: "center 50%",
+      }} />
+
+      {/* Sección inferior — tarjetas sobre fondo gris */}
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        padding: "40px 16px 48px",
+      }}>
+      <div style={{ textAlign: "center", marginBottom: 0 }}>
 
       {/* Tarjetas */}
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 560 }}>
