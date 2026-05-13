@@ -212,8 +212,8 @@ function PantallaInicio({ onCliente, onInterno }) {
       {/* Logo / header */}
       <div style={{ textAlign: "center", marginBottom: 48 }}>
         <div style={{
-          background: KAVAK_BLUE, borderRadius: 20, padding: "16px 28px",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          background: KAVAK_BLUE, borderRadius: 16, padding: "14px 24px",
+          display: "inline-block",
           margin: "0 auto 20px",
         }}>
           <KavakLogo dark={false} />
@@ -320,8 +320,8 @@ function LoginInterno({ onLogin, onVolver }) {
       }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{
-            background: KAVAK_BLUE, borderRadius: 14, padding: "10px 18px",
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            background: KAVAK_BLUE, borderRadius: 14, padding: "10px 24px",
+            display: "inline-block",
             margin: "0 auto 16px",
           }}>
             <KavakLogo dark={false} />
@@ -795,7 +795,7 @@ function PortalCliente({ onVolver }) {
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 16px 48px" }}>
       <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ background: KAVAK_BLUE, borderRadius: 16, padding: "10px 20px", display: "inline-flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+        <div style={{ background: KAVAK_BLUE, borderRadius: 16, padding: "10px 24px", display: "inline-block", margin: "0 auto 12px" }}>
           <KavakLogo dark={false} />
         </div>
         <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 700, color: "#1a1a1a" }}>Seguimiento de mi vehículo</h1>
@@ -913,7 +913,7 @@ function PanelInterno({ onCerrarSesion }) {
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <div style={{ padding: "14px 20px 14px 0", marginRight: 16, borderRight: "1px solid #ececec" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><KavakLogo dark={true} small={true} /><span style={{ fontWeight: 700, fontSize: 14, color: "#1a1a1a" }}>Sigue tu caso</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 15, color: KAVAK_BLUE, letterSpacing: 1 }}>KAVAK</span><span style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>· Sigue tu caso</span></div>
         </div>
         {[
           { key: "backlog", label: "Backlog" },
