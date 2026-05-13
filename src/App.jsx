@@ -3,6 +3,53 @@ import { useState, useEffect, useCallback } from "react";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// ── Supabase Auth ─────────────────────────────────────────────────
+
+async function authSignInWithOtp(email) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, create_user: false }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.msg || err.message || "Error al enviar magic link");
+  }
+  return true;
+}
+
+async function authVerifyOtp(email, token) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, token, type: "magiclink" }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.msg || err.message || "Código inválido o expirado");
+  }
+  const data = await res.json();
+  return data.access_token || null;
+}
+
+async function authSignOut(accessToken) {
+  await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${accessToken}`,
+    },
+  });
+}
+
+// ── Estado map ───────────────────────────────────────────────────
+
 const ESTADO_MAP = {
   "PENDIENTE DE DIAGNÓSTICO": { principal: "Diagnostico", subestado: "Pendiente de diagnóstico", orden: 0 },
   "DIAGNÓSTICO":              { principal: "Diagnostico", subestado: "En diagnóstico",            orden: 1 },
@@ -63,13 +110,13 @@ function haceHoras(fecha) {
   return (Date.now() - new Date(fecha).getTime()) / (1000 * 60 * 60);
 }
 
-// ── API ──────────────────────────────────────────────────────────
+// ── API REST (usa token si disponible) ────────────────────────────
 
-function supabaseFetch(path, options = {}) {
+function supabaseFetch(path, options = {}, accessToken = null) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
   const headers = {
     "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+    "Authorization": `Bearer ${accessToken || SUPABASE_ANON_KEY}`,
     "Content-Type": "application/json",
     "Prefer": options.prefer || "return=representation",
     ...options.headers,
@@ -77,14 +124,11 @@ function supabaseFetch(path, options = {}) {
   return fetch(url, { ...options, headers });
 }
 
-async function getCasos() {
-  // Traemos todos ordenados por fecha_ingreso desc + id_sistema desc
-  // para que el primer registro de cada patente sea siempre el más reciente
-  const res = await supabaseFetch("bbdd_cc?order=fecha_ingreso.desc,id_sistema.desc");
+// bbdd_cc: solo lectura, sin token (para cliente) y con token (para interno)
+async function getCasos(accessToken) {
+  const res = await supabaseFetch("bbdd_cc?order=fecha_ingreso.desc,id_sistema.desc", {}, accessToken);
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
-
-  // Deduplicamos por patente: nos quedamos solo con el registro más reciente
   const vistos = new Set();
   return todos.filter(c => {
     const key = c.patente?.toUpperCase().trim();
@@ -94,37 +138,29 @@ async function getCasos() {
   });
 }
 
-async function getComentarios() {
-  const res = await supabaseFetch("comentarios?order=created_at.desc");
+async function getComentarios(accessToken) {
+  const res = await supabaseFetch("comentarios?order=created_at.desc", {}, accessToken);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
-async function addComentario(data) {
+async function addComentario(data, accessToken) {
   const res = await supabaseFetch("comentarios", {
     method: "POST",
     body: JSON.stringify(data),
-  });
+  }, accessToken);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
-// Panel interno: solo el registro más reciente por número de caso
-async function getCasoByNumero(numero) {
-  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.desc,id_sistema.desc&limit=1`);
-  if (!res.ok) throw new Error(await res.text());
-  const data = await res.json();
-  return data[0] || null;
-}
-
-// Portal cliente: historial completo por número de caso, orden cronológico asc
+// Portal cliente: historial completo por número de caso
 async function getHistorialByNumero(numero) {
   const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.asc,id_sistema.asc`);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
-// Portal cliente: historial completo por patente, orden cronológico asc
+// Portal cliente: historial completo por patente
 async function getHistorialByPatente(patente) {
   const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=fecha_ingreso.asc,id_sistema.asc`);
   if (!res.ok) throw new Error(await res.text());
@@ -184,14 +220,238 @@ function Modal({ title, onClose, children }) {
   );
 }
 
+// ── Pantalla de inicio ────────────────────────────────────────────
+
+function PantallaInicio({ onCliente, onInterno }) {
+  return (
+    <div style={{
+      minHeight: "100vh", background: "#f5f4f1",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      padding: "32px 16px",
+    }}>
+      {/* Logo / header */}
+      <div style={{ textAlign: "center", marginBottom: 48 }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: 18, background: "#534AB7",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          margin: "0 auto 16px", fontSize: 30,
+        }}>🚗</div>
+        <h1 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 700, color: "#1a1a1a", letterSpacing: -0.5 }}>
+          Post-Venta Kavak
+        </h1>
+        <p style={{ margin: 0, fontSize: 15, color: "#999" }}>
+          Selecciona cómo deseas ingresar
+        </p>
+      </div>
+
+      {/* Tarjetas */}
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 560 }}>
+
+        {/* Cliente */}
+        <button onClick={onCliente} style={{
+          flex: "1 1 220px", background: "#fff", border: "1px solid #e8e8e8",
+          borderRadius: 16, padding: "28px 24px", cursor: "pointer", textAlign: "left",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+          transition: "box-shadow 0.15s, transform 0.15s",
+        }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "none"; }}
+        >
+          <div style={{
+            width: 44, height: 44, borderRadius: 12, background: "#EEEDFE",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 22, marginBottom: 14,
+          }}>👤</div>
+          <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>Cliente Kavak</p>
+          <p style={{ margin: 0, fontSize: 13, color: "#999", lineHeight: 1.4 }}>
+            Consulta el estado de tu vehículo con tu número de caso o patente
+          </p>
+          <div style={{
+            marginTop: 18, display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: 13, fontWeight: 600, color: "#534AB7",
+          }}>
+            Consultar estado →
+          </div>
+        </button>
+
+        {/* Interno */}
+        <button onClick={onInterno} style={{
+          flex: "1 1 220px", background: "#534AB7", border: "none",
+          borderRadius: 16, padding: "28px 24px", cursor: "pointer", textAlign: "left",
+          boxShadow: "0 2px 12px rgba(83,74,183,0.25)",
+          transition: "box-shadow 0.15s, transform 0.15s",
+        }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(83,74,183,0.4)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(83,74,183,0.25)"; e.currentTarget.style.transform = "none"; }}
+        >
+          <div style={{
+            width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.15)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 22, marginBottom: 14,
+          }}>🔧</div>
+          <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 700, color: "#fff" }}>Internos de Kavak</p>
+          <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>
+            Acceso al panel de gestión para el equipo de post-venta
+          </p>
+          <div style={{
+            marginTop: 18, display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)",
+          }}>
+            Iniciar sesión →
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Login internos (magic link) ───────────────────────────────────
+
+function LoginInterno({ onLogin, onVolver }) {
+  const [email, setEmail]       = useState("");
+  const [step, setStep]         = useState("email"); // "email" | "code"
+  const [code, setCode]         = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [err, setErr]           = useState("");
+  const [enviado, setEnviado]   = useState(false);
+
+  async function handleSendLink() {
+    const e = email.trim().toLowerCase();
+    if (!e) { setErr("Ingresa tu correo"); return; }
+    if (!e.endsWith("@kavak.com")) { setErr("Solo se permiten correos @kavak.com"); return; }
+    setLoading(true); setErr("");
+    try {
+      await authSignInWithOtp(e);
+      setEnviado(true);
+      setStep("code");
+    } catch (ex) {
+      setErr(ex.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerify() {
+    if (!code.trim()) { setErr("Ingresa el código recibido"); return; }
+    setLoading(true); setErr("");
+    try {
+      const token = await authVerifyOtp(email.trim().toLowerCase(), code.trim());
+      if (token) {
+        onLogin(token, email.trim().toLowerCase());
+      } else {
+        setErr("No se pudo verificar. Intenta de nuevo.");
+      }
+    } catch (ex) {
+      setErr(ex.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const inputStyle = {
+    width: "100%", padding: "12px 14px", borderRadius: 10,
+    border: "1px solid #e0e0e0", background: "#fafafa",
+    color: "#1a1a1a", fontSize: 15, boxSizing: "border-box", outline: "none",
+  };
+  const btnPrimary = {
+    width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
+    background: "#534AB7", color: "#fff", fontWeight: 600,
+    cursor: loading ? "wait" : "pointer", fontSize: 15, marginTop: 12,
+  };
+
+  return (
+    <div style={{
+      minHeight: "100vh", background: "#f5f4f1",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      padding: "32px 16px",
+    }}>
+      <div style={{
+        width: "100%", maxWidth: 400, background: "#fff",
+        borderRadius: 18, padding: "36px 32px",
+        boxShadow: "0 4px 32px rgba(0,0,0,0.08)",
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, background: "#534AB7",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 12px", fontSize: 24,
+          }}>🔧</div>
+          <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
+            {step === "email" ? "Acceso internos" : "Revisa tu correo"}
+          </h2>
+          <p style={{ margin: 0, fontSize: 13, color: "#999" }}>
+            {step === "email"
+              ? "Ingresa tu correo @kavak.com"
+              : `Ingresaste el código de 6 dígitos enviado a ${email}`}
+          </p>
+        </div>
+
+        {step === "email" && (
+          <>
+            <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Correo Kavak</label>
+            <input
+              style={inputStyle}
+              type="email"
+              placeholder="nombre@kavak.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSendLink()}
+            />
+            {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 8, margin: "8px 0 0" }}>{err}</p>}
+            <button onClick={handleSendLink} disabled={loading} style={btnPrimary}>
+              {loading ? "Enviando..." : "Enviar magic link"}
+            </button>
+          </>
+        )}
+
+        {step === "code" && (
+          <>
+            <div style={{ background: "#E1F5EE", border: "1px solid #1D9E7530", borderRadius: 10, padding: "10px 14px", marginBottom: 18 }}>
+              <p style={{ margin: 0, fontSize: 13, color: "#085041" }}>
+                ✅ Magic link enviado. Revisa tu bandeja de entrada y copia el código de 6 dígitos.
+              </p>
+            </div>
+            <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Código de verificación</label>
+            <input
+              style={{ ...inputStyle, letterSpacing: 4, fontSize: 20, textAlign: "center" }}
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="000000"
+              value={code}
+              onChange={e => setCode(e.target.value.replace(/\D/g, ""))}
+              onKeyDown={e => e.key === "Enter" && handleVerify()}
+            />
+            {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 8, margin: "8px 0 0" }}>{err}</p>}
+            <button onClick={handleVerify} disabled={loading} style={btnPrimary}>
+              {loading ? "Verificando..." : "Ingresar"}
+            </button>
+            <button onClick={() => { setStep("email"); setCode(""); setErr(""); }} style={{
+              width: "100%", marginTop: 8, padding: "10px 0", borderRadius: 10,
+              border: "1px solid #e0e0e0", background: "transparent",
+              color: "#888", cursor: "pointer", fontSize: 13,
+            }}>Reenviar código</button>
+          </>
+        )}
+
+        <button onClick={onVolver} style={{
+          width: "100%", marginTop: 14, background: "none", border: "none",
+          cursor: "pointer", fontSize: 13, color: "#ccc", textDecoration: "underline",
+        }}>← Volver al inicio</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Modal comentario ──────────────────────────────────────────────
 
-function ModalComentario({ caso, onSave, onClose }) {
+function ModalComentario({ caso, onSave, onClose, accessToken }) {
   const { subestado, principal } = getMapped(caso.estado_operativo);
   const [comentario, setComentario] = useState("");
-  const [creadoPor, setCreadoPor] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState("");
+  const [creadoPor, setCreadoPor]   = useState("");
+  const [saving, setSaving]         = useState(false);
+  const [err, setErr]               = useState("");
 
   async function handleSave() {
     if (!comentario.trim()) { setErr("El comentario no puede estar vacío"); return; }
@@ -199,12 +459,12 @@ function ModalComentario({ caso, onSave, onClose }) {
     try {
       await addComentario({
         numero_caso: caso.numero_caso,
-        patente: caso.patente,           // NUEVO: guardamos patente
+        patente: caso.patente,
         estado: caso.estado_operativo,
         comentario: comentario.trim(),
         creado_por: creadoPor.trim() || "Sin nombre",
         created_at: new Date().toISOString(),
-      });
+      }, accessToken);
       onSave();
       onClose();
     } catch (e) {
@@ -390,7 +650,6 @@ function TabPendientes({ casos, comentariosMap, onAgregarComentario, onVerHistor
             {pendientes.map(c => {
               const comentariosDeCaso = comentariosMap[c.numero_caso] || [];
               const ultimo = comentariosDeCaso[0];
-              // CAMBIO: umbral 72h en vez de 24h
               const alerta = haceHoras(ultimo?.created_at) >= 72 ? "advertencia" : "urgente";
               return (
                 <CasoCard key={c.id_sistema} caso={c} comentariosDeCaso={comentariosDeCaso}
@@ -473,14 +732,10 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 
 // ── Progreso cliente ──────────────────────────────────────────────
 
-// historico: array de filas de bbdd_cc para esta patente, ordenado asc por fecha
-// El último elemento es el estado actual (más reciente)
 function ProgresoCliente({ historico }) {
-  // Estado actual = último registro del histórico
-  const casoActual = historico[historico.length - 1];
+  const casoActual  = historico[historico.length - 1];
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
-  // Mapa de estado_operativo → fila del histórico para acceder a sus fechas
   const histMap = {};
   for (const fila of historico) {
     const k = fila.estado_operativo?.toUpperCase().trim();
@@ -523,12 +778,10 @@ function ProgresoCliente({ historico }) {
                 const ordenS     = getOrden(s.key);
                 const completado = ordenS < ordenActual;
                 const activo     = ordenS === ordenActual;
-                // Si no hay registro para este subestado y tampoco es pasado/activo → futuro sin info
                 const fila       = histMap[s.key];
-                const tieneInfo  = completado || activo; // solo mostramos fechas si existe en el histórico
-
-                const inicioStr = fila ? formatFechaHora(fila.fecha_ingreso, fila.hora_ingreso) : null;
-                const listoStr  = fila ? formatFechaHora(fila.fecha_listo,   fila.hora_listo)   : null;
+                const tieneInfo  = completado || activo;
+                const inicioStr  = fila ? formatFechaHora(fila.fecha_ingreso, fila.hora_ingreso) : null;
+                const listoStr   = fila ? formatFechaHora(fila.fecha_listo,   fila.hora_listo)   : null;
 
                 return (
                   <div key={s.key} style={{
@@ -559,28 +812,15 @@ function ProgresoCliente({ historico }) {
                         }}>Estado actual</span>
                       )}
                     </div>
-
-                    {/* Fechas: inicio siempre si hay info; listo solo si completado y existe */}
                     {tieneInfo && (inicioStr || listoStr) && (
-                      <div style={{
-                        marginTop: 8, marginLeft: 30,
-                        display: "flex", gap: 10, flexWrap: "wrap",
-                      }}>
+                      <div style={{ marginTop: 8, marginLeft: 30, display: "flex", gap: 10, flexWrap: "wrap" }}>
                         {inicioStr && (
-                          <span style={{
-                            fontSize: 11, color: cfg.text,
-                            background: "#fff", border: `1px solid ${cfg.border}`,
-                            borderRadius: 6, padding: "2px 8px",
-                          }}>
+                          <span style={{ fontSize: 11, color: cfg.text, background: "#fff", border: `1px solid ${cfg.border}`, borderRadius: 6, padding: "2px 8px" }}>
                             📅 Inicio: {inicioStr}
                           </span>
                         )}
                         {listoStr && (
-                          <span style={{
-                            fontSize: 11, color: cfg.text,
-                            background: "#fff", border: `1px solid ${cfg.border}`,
-                            borderRadius: 6, padding: "2px 8px",
-                          }}>
+                          <span style={{ fontSize: 11, color: cfg.text, background: "#fff", border: `1px solid ${cfg.border}`, borderRadius: 6, padding: "2px 8px" }}>
                             ✅ Fin: {listoStr}
                           </span>
                         )}
@@ -602,31 +842,25 @@ function ProgresoCliente({ historico }) {
 
 // ── Portal Cliente ────────────────────────────────────────────────
 
-function PortalCliente({ onIrInterno }) {
-  const [busqueda, setBusqueda] = useState("");
-  const [caso, setCaso] = useState(null);
+function PortalCliente({ onVolver }) {
+  const [busqueda, setBusqueda]   = useState("");
+  const [caso, setCaso]           = useState(null);
   const [historico, setHistorico] = useState([]);
   const [comentarios, setComentarios] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [err, setErr]             = useState("");
 
   async function buscar() {
     const q = busqueda.trim();
     if (!q) return;
     setLoading(true); setErr(""); setCaso(null); setHistorico([]); setComentarios([]);
     try {
-      // Trae historial completo ordenado asc
       let hist = [];
-      if (/^\d+$/.test(q)) {
-        hist = await getHistorialByNumero(q);
-      }
-      if (hist.length === 0) {
-        hist = await getHistorialByPatente(q);
-      }
+      if (/^\d+$/.test(q)) hist = await getHistorialByNumero(q);
+      if (hist.length === 0) hist = await getHistorialByPatente(q);
       if (hist.length === 0) {
         setErr("No se encontró ningún caso con ese número o patente.");
       } else {
-        // caso actual = el registro más reciente (último en el array asc)
         const casoReciente = hist[hist.length - 1];
         setCaso(casoReciente);
         setHistorico(hist);
@@ -641,7 +875,7 @@ function PortalCliente({ onIrInterno }) {
   }
 
   const mapped = caso ? getMapped(caso.estado_operativo) : null;
-  const cfg = mapped ? ESTADOS[mapped.principal] : null;
+  const cfg    = mapped ? ESTADOS[mapped.principal] : null;
 
   return (
     <div style={{ minHeight: "100vh", background: "#f5f4f1", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 16px 48px" }}>
@@ -704,29 +938,32 @@ function PortalCliente({ onIrInterno }) {
         </div>
       )}
 
-      <button onClick={onIrInterno} style={{
+      <button onClick={onVolver} style={{
         marginTop: 40, background: "none", border: "none", cursor: "pointer",
         fontSize: 12, color: "#ccc", textDecoration: "underline",
-      }}>Acceso panel interno</button>
+      }}>← Volver al inicio</button>
     </div>
   );
 }
 
 // ── Panel Interno ─────────────────────────────────────────────────
 
-function PanelInterno({ onIrCliente }) {
-  const [tab, setTab] = useState("backlog");
-  const [casos, setCasos] = useState([]);
+function PanelInterno({ accessToken, userEmail, onCerrarSesion }) {
+  const [tab, setTab]                   = useState("backlog");
+  const [casos, setCasos]               = useState([]);
   const [comentariosMap, setComentariosMap] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [errConn, setErrConn] = useState("");
+  const [loading, setLoading]           = useState(true);
+  const [errConn, setErrConn]           = useState("");
   const [modalComentario, setModalComentario] = useState(null);
-  const [modalHistorial, setModalHistorial] = useState(null);
+  const [modalHistorial, setModalHistorial]   = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [casosData, comentariosData] = await Promise.all([getCasos(), getComentarios()]);
+      const [casosData, comentariosData] = await Promise.all([
+        getCasos(accessToken),
+        getComentarios(accessToken),
+      ]);
       setCasos(casosData);
       const map = {};
       for (const c of comentariosData) {
@@ -740,7 +977,7 @@ function PanelInterno({ onIrCliente }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [accessToken]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -750,6 +987,11 @@ function PanelInterno({ onIrCliente }) {
     const ultimo = comentariosDeCaso[0];
     return !ultimo || ultimo.estado?.toUpperCase().trim() !== c.estado_operativo?.toUpperCase().trim();
   }).length;
+
+  async function handleCerrarSesion() {
+    await authSignOut(accessToken).catch(() => {});
+    onCerrarSesion();
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#f5f4f1" }}>
@@ -780,11 +1022,19 @@ function PanelInterno({ onIrCliente }) {
             )}
           </button>
         ))}
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
           {loading && <span style={{ fontSize: 12, color: "#bbb" }}>Cargando...</span>}
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: errConn ? "#E24B4A" : "#1D9E75" }} title={errConn || "Conectado"} />
-          <button onClick={onIrCliente} style={{ fontSize: 12, color: "#bbb", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
-            Portal cliente →
+          {userEmail && (
+            <span style={{ fontSize: 12, color: "#aaa", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {userEmail}
+            </span>
+          )}
+          <button onClick={handleCerrarSesion} style={{
+            fontSize: 12, color: "#E24B4A", background: "none", border: "1px solid #E24B4A40",
+            borderRadius: 6, padding: "4px 10px", cursor: "pointer",
+          }}>
+            Cerrar sesión
           </button>
         </div>
       </div>
@@ -811,7 +1061,7 @@ function PanelInterno({ onIrCliente }) {
 
       {modalComentario && (
         <Modal title="Agregar comentario" onClose={() => setModalComentario(null)}>
-          <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} />
+          <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} accessToken={accessToken} />
         </Modal>
       )}
       {modalHistorial && (
@@ -826,8 +1076,46 @@ function PanelInterno({ onIrCliente }) {
 // ── App ───────────────────────────────────────────────────────────
 
 export default function App() {
-  const [vista, setVista] = useState("cliente");
-  return vista === "cliente"
-    ? <PortalCliente onIrInterno={() => setVista("interno")} />
-    : <PanelInterno onIrCliente={() => setVista("cliente")} />;
+  // vista: "inicio" | "cliente" | "login" | "interno"
+  const [vista, setVista]           = useState("inicio");
+  const [accessToken, setAccessToken] = useState(null);
+  const [userEmail, setUserEmail]   = useState("");
+
+  function handleLogin(token, email) {
+    setAccessToken(token);
+    setUserEmail(email);
+    setVista("interno");
+  }
+
+  function handleCerrarSesion() {
+    setAccessToken(null);
+    setUserEmail("");
+    setVista("inicio");
+  }
+
+  if (vista === "inicio") return (
+    <PantallaInicio
+      onCliente={() => setVista("cliente")}
+      onInterno={() => setVista("login")}
+    />
+  );
+
+  if (vista === "cliente") return (
+    <PortalCliente onVolver={() => setVista("inicio")} />
+  );
+
+  if (vista === "login") return (
+    <LoginInterno
+      onLogin={handleLogin}
+      onVolver={() => setVista("inicio")}
+    />
+  );
+
+  if (vista === "interno") return (
+    <PanelInterno
+      accessToken={accessToken}
+      userEmail={userEmail}
+      onCerrarSesion={handleCerrarSesion}
+    />
+  );
 }
