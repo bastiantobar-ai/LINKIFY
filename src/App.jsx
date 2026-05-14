@@ -105,16 +105,10 @@ function supabaseFetch(path, options = {}) {
 
 // bbdd_cc: solo lectura, sin token (para cliente) y con token (para interno)
 async function getCasos() {
-  const res = await supabaseFetch("bbdd_cc?order=fecha_ingreso.desc,id_sistema.desc", {});
+  // Vista bbdd_cc_activos: ya devuelve solo el registro más reciente por patente
+  const res = await supabaseFetch("bbdd_cc_activos?order=fecha_ingreso.desc", {});
   if (!res.ok) throw new Error(await res.text());
-  const todos = await res.json();
-  const vistos = new Set();
-  return todos.filter(c => {
-    const key = c.patente?.toUpperCase().trim();
-    if (!key || vistos.has(key)) return false;
-    vistos.add(key);
-    return true;
-  });
+  return res.json();
 }
 
 async function getComentarios() {
