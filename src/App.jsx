@@ -128,10 +128,20 @@ async function addComentario(data) {
 
 // Portal cliente: historial completo por número de caso
 // Filtra solo el proceso más reciente (id_sistema más alto) y lo devuelve ordenado asc
+// Dado todos los registros de una patente/caso, elige el id_sistema del proceso activo:
+// Si hay ENTREGADO A CLIENTE → usa ese id_sistema (el caso está cerrado)
+// Si no → usa el id_sistema más alto (proceso más reciente)
+function elegirIdSistema(todos) {
+  if (!todos.length) return null;
+  const entregado = todos.find(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
+  if (entregado) return entregado.id_sistema;
+  return Math.max(...todos.map(f => f.id_sistema));
+}
+
 function filtrarProcesoReciente(todos) {
   if (!todos.length) return [];
-  const maxId = Math.max(...todos.map(f => f.id_sistema));
-  return todos.filter(f => f.id_sistema === maxId)
+  const idSistema = elegirIdSistema(todos);
+  return todos.filter(f => f.id_sistema === idSistema)
               .sort((a, b) => {
                 const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
                 const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
@@ -140,30 +150,20 @@ function filtrarProcesoReciente(todos) {
 }
 
 async function getHistorialByNumero(numero) {
-  // Primero obtenemos el id_sistema más alto para este numero_caso
-  const resId = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=id_sistema.desc&limit=1`);
-  if (!resId.ok) throw new Error(await resId.text());
-  const [first] = await resId.json();
-  if (!first) return [];
-  const idSistema = first.id_sistema;
-  // Luego traemos todos los registros de ese id_sistema ordenados asc
-  const res = await supabaseFetch(`bbdd_cc?id_sistema=eq.${idSistema}&order=fecha_ingreso.asc,hora_ingreso.asc`);
+  // Traemos todos los registros del numero_caso
+  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const todos = await res.json();
+  return filtrarProcesoReciente(todos);
 }
 
 // Portal cliente: historial completo por patente
 async function getHistorialByPatente(patente) {
-  // Primero obtenemos el id_sistema más alto para esta patente
-  const resId = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=id_sistema.desc&limit=1`);
-  if (!resId.ok) throw new Error(await resId.text());
-  const [first] = await resId.json();
-  if (!first) return [];
-  const idSistema = first.id_sistema;
-  // Luego traemos todos los registros de ese id_sistema ordenados asc
-  const res = await supabaseFetch(`bbdd_cc?id_sistema=eq.${idSistema}&order=fecha_ingreso.asc,hora_ingreso.asc`);
+  // Traemos todos los registros de la patente
+  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const todos = await res.json();
+  return filtrarProcesoReciente(todos);
 }
 
 async function registrarConsulta(busqueda, tipo, numero_caso, patente) {
@@ -1063,7 +1063,7 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
               {userEmail}
             </span>
           )}
-          <button onClick={() => window.open(window.location.href, "_blank")} style={{
+          <button onClick={() => window.open(window.location.origin + "?vista=cliente", "_blank")} style={{
             fontSize: 12, color: KAVAK_BLUE, background: "none", border: `1px solid ${KAVAK_BLUE}40`,
             borderRadius: 6, padding: "4px 10px", cursor: "pointer",
           }}>
@@ -1117,6 +1117,15 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
 export default function App() {
   const [vista, setVista]       = useState("inicio");
   const [userEmail, setUserEmail] = useState("");
+
+  // Detecta ?vista=cliente en la URL para ir directo al portal cliente
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("vista") === "cliente") {
+      setVista("cliente");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   if (vista === "inicio") return (
     <PantallaInicio
