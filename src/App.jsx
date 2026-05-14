@@ -259,7 +259,7 @@ function PantallaInicio({ onCliente, onInterno }) {
             <KavakLogo dark={false} />
           </div>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a1a", letterSpacing: -0.5 }}>
-            Sigue tu caso
+            Sigue Tu Caso
           </h1>
           <p style={{ margin: 0, fontSize: 14, color: "#999" }}>
             Selecciona cómo deseas ingresar
@@ -1034,7 +1034,7 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <div style={{ padding: "14px 20px 14px 0", marginRight: 16, borderRight: "1px solid #ececec" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 15, color: KAVAK_BLUE, letterSpacing: 1 }}>KAVAK</span><span style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>· Sigue tu caso</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 15, color: KAVAK_BLUE, letterSpacing: 1 }}>KAVAK</span><span style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>· Sigue Tu Caso</span></div>
         </div>
         {[
           { key: "backlog", label: "Backlog" },
