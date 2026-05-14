@@ -10,15 +10,15 @@ const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "kavak2026";
 // ── Estado map ───────────────────────────────────────────────────
 
 const ESTADO_MAP = {
+  "PENDIENTE":                { principal: "Diagnostico", subestado: "Pendiente de diagnóstico", orden: 0 },
   "PENDIENTE DE DIAGNÓSTICO": { principal: "Diagnostico", subestado: "Pendiente de diagnóstico", orden: 0 },
   "DIAGNÓSTICO":              { principal: "Diagnostico", subestado: "En diagnóstico",            orden: 1 },
   "ESPERA DE REPUESTO":       { principal: "EnTrabajo",   subestado: "Espera de repuesto",        orden: 2 },
   "DISPONIBLE PARA TRABAJO":  { principal: "EnTrabajo",   subestado: "Disponible para trabajo",   orden: 3 },
   "TRABAJANDO":               { principal: "EnTrabajo",   subestado: "Trabajando",                orden: 4 },
   "PRUEBA DE RUTA":           { principal: "EnTrabajo",   subestado: "Prueba de ruta",            orden: 5 },
-  "LISTO":                    { principal: "Listo",       subestado: "Listo",                     orden: 6 },
-  "LISTO PARA ENTREGAR":      { principal: "Listo",       subestado: "Listo para entregar",       orden: 7 },
-  "ENTREGADO A CLIENTE":      { principal: "Listo",       subestado: "Entregado a cliente",       orden: 8 },
+  "LISTO":                    { principal: "Listo",       subestado: "Listo para entregar",       orden: 6 },
+  "ENTREGADO A CLIENTE":      { principal: "Listo",       subestado: "Entregado a cliente",       orden: 7 },
 };
 
 const SUBESTADOS_ORDEN = [
@@ -28,8 +28,7 @@ const SUBESTADOS_ORDEN = [
   { key: "DISPONIBLE PARA TRABAJO",  label: "Disponible para trabajo",  principal: "EnTrabajo"   },
   { key: "TRABAJANDO",               label: "Trabajando",               principal: "EnTrabajo"   },
   { key: "PRUEBA DE RUTA",           label: "Prueba de ruta",           principal: "EnTrabajo"   },
-  { key: "LISTO",                    label: "Listo",                    principal: "Listo"       },
-  { key: "LISTO PARA ENTREGAR",      label: "Listo para entregar",      principal: "Listo"       },
+  { key: "LISTO",                    label: "Listo para entregar",      principal: "Listo"       },
   { key: "ENTREGADO A CLIENTE",      label: "Entregado a cliente",      principal: "Listo"       },
 ];
 
@@ -703,13 +702,15 @@ function ProgresoCliente({ historico, comentarios = [] }) {
 
   // histMapFirst: primera fila de cada estado → fecha_ingreso real
   // histMapLast:  última fila de cada estado  → fecha_listo real
+  // Normalizamos PENDIENTE → PENDIENTE DE DIAGNÓSTICO para unificar
+  const normalizeKey = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
   const histMapFirst = {};
   const histMapLast  = {};
   for (const fila of historico) {
-    const k = fila.estado_operativo?.toUpperCase().trim();
+    const k = normalizeKey(fila.estado_operativo?.toUpperCase().trim());
     if (!k) continue;
-    if (!histMapFirst[k]) histMapFirst[k] = fila; // primera aparición
-    histMapLast[k] = fila;                         // siempre sobreescribe → queda la última
+    if (!histMapFirst[k]) histMapFirst[k] = fila;
+    histMapLast[k] = fila;
   }
 
   // Mapa de estado_operativo → comentarios de ese subestado (ordenados desc)
@@ -761,6 +762,8 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const filaFirst  = histMapFirst[s.key];
                 const filaLast   = histMapLast[s.key];
                 const tieneInfo  = completado || activo;
+                // Si existe en el historial pero es futuro → estuvo aquí pero retrocedió
+                const retroced   = !completado && !activo && !!filaFirst;
                 // fecha inicio = primera vez que entró a este estado
                 const inicioStr  = filaFirst ? formatFechaHora(filaFirst.fecha_ingreso, filaFirst.hora_ingreso) : null;
                 // fecha fin = última fila del estado (tiene el fecha_listo cuando se completó)
@@ -795,16 +798,35 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                         }}>Estado actual</span>
                       )}
                     </div>
-                    {tieneInfo && (inicioStr || listoStr) && (
+                    {(tieneInfo || retroced) && (inicioStr || listoStr) && (
                       <div style={{ marginTop: 8, marginLeft: 30, display: "flex", gap: 10, flexWrap: "wrap" }}>
                         {inicioStr && (
-                          <span style={{ fontSize: 11, color: cfg.text, background: "#fff", border: `1px solid ${cfg.border}`, borderRadius: 6, padding: "2px 8px" }}>
+                          <span style={{
+                            fontSize: 11,
+                            color: retroced ? "#bbb" : cfg.text,
+                            background: "#fff",
+                            border: `1px solid ${retroced ? "#e0e0e0" : cfg.border}`,
+                            borderRadius: 6, padding: "2px 8px",
+                            textDecoration: retroced ? "line-through" : "none",
+                          }}>
                             📅 Inicio: {inicioStr}
                           </span>
                         )}
                         {listoStr && (
-                          <span style={{ fontSize: 11, color: cfg.text, background: "#fff", border: `1px solid ${cfg.border}`, borderRadius: 6, padding: "2px 8px" }}>
+                          <span style={{
+                            fontSize: 11,
+                            color: retroced ? "#bbb" : cfg.text,
+                            background: "#fff",
+                            border: `1px solid ${retroced ? "#e0e0e0" : cfg.border}`,
+                            borderRadius: 6, padding: "2px 8px",
+                            textDecoration: retroced ? "line-through" : "none",
+                          }}>
                             ✅ Fin: {listoStr}
+                          </span>
+                        )}
+                        {retroced && (
+                          <span style={{ fontSize: 11, color: "#bbb", fontStyle: "italic" }}>
+                            ↩ Retrocedido
                           </span>
                         )}
                       </div>
