@@ -134,15 +134,41 @@ async function addComentario(data) {
 }
 
 // Portal cliente: historial completo por número de caso
+// Filtra solo el proceso más reciente (id_sistema más alto) y lo devuelve ordenado asc
+function filtrarProcesoReciente(todos) {
+  if (!todos.length) return [];
+  const maxId = Math.max(...todos.map(f => f.id_sistema));
+  return todos.filter(f => f.id_sistema === maxId)
+              .sort((a, b) => {
+                const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
+                const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
+                return da - db;
+              });
+}
+
 async function getHistorialByNumero(numero) {
-  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.asc,id_sistema.asc`);
+  // Primero obtenemos el id_sistema más alto para este numero_caso
+  const resId = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=id_sistema.desc&limit=1`);
+  if (!resId.ok) throw new Error(await resId.text());
+  const [first] = await resId.json();
+  if (!first) return [];
+  const idSistema = first.id_sistema;
+  // Luego traemos todos los registros de ese id_sistema ordenados asc
+  const res = await supabaseFetch(`bbdd_cc?id_sistema=eq.${idSistema}&order=fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 // Portal cliente: historial completo por patente
 async function getHistorialByPatente(patente) {
-  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=fecha_ingreso.asc,id_sistema.asc`);
+  // Primero obtenemos el id_sistema más alto para esta patente
+  const resId = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=id_sistema.desc&limit=1`);
+  if (!resId.ok) throw new Error(await resId.text());
+  const [first] = await resId.json();
+  if (!first) return [];
+  const idSistema = first.id_sistema;
+  // Luego traemos todos los registros de ese id_sistema ordenados asc
+  const res = await supabaseFetch(`bbdd_cc?id_sistema=eq.${idSistema}&order=fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
