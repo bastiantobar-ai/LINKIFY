@@ -71,7 +71,10 @@ function getOrden(keyEstado) {
 
 function formatFechaHora(fecha, hora) {
   if (!fecha) return null;
-  const f = new Date(fecha).toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
+  // Parseamos la fecha directamente sin convertir zona horaria
+  // fecha viene como "YYYY-MM-DD" desde Supabase
+  const [y, m, d] = fecha.split("-");
+  const f = `${d}-${m}-${y}`;
   const h = hora ? hora.slice(0, 5) : null;
   return h ? `${f} ${h}` : f;
 }
@@ -128,20 +131,24 @@ async function addComentario(data) {
 
 // Portal cliente: historial completo por número de caso
 // Filtra solo el proceso más reciente (id_sistema más alto) y lo devuelve ordenado asc
-// Dado todos los registros de una patente/caso, elige el id_sistema del proceso activo:
-// Si hay ENTREGADO A CLIENTE → usa ese id_sistema (el caso está cerrado)
-// Si no → usa el id_sistema más alto (proceso más reciente)
-function elegirIdSistema(todos) {
-  if (!todos.length) return null;
-  const entregado = todos.find(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
-  if (entregado) return entregado.id_sistema;
-  return Math.max(...todos.map(f => f.id_sistema));
-}
-
+// Dado todos los registros de una patente/caso:
+// - Si hay ENTREGADO A CLIENTE → devuelve TODOS los registros ordenados asc
+//   (el historial completo del proceso hasta la entrega)
+// - Si no → devuelve solo los del id_sistema más alto (proceso más reciente)
 function filtrarProcesoReciente(todos) {
   if (!todos.length) return [];
-  const idSistema = elegirIdSistema(todos);
-  return todos.filter(f => f.id_sistema === idSistema)
+  const tieneEntregado = todos.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
+  if (tieneEntregado) {
+    // Devolvemos todo el historial ordenado cronológicamente
+    return [...todos].sort((a, b) => {
+      const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
+      const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
+      return da - db;
+    });
+  }
+  // Solo el proceso más reciente por id_sistema
+  const maxId = Math.max(...todos.map(f => f.id_sistema));
+  return todos.filter(f => f.id_sistema === maxId)
               .sort((a, b) => {
                 const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
                 const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
@@ -150,16 +157,13 @@ function filtrarProcesoReciente(todos) {
 }
 
 async function getHistorialByNumero(numero) {
-  // Traemos todos los registros del numero_caso
   const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
   return filtrarProcesoReciente(todos);
 }
 
-// Portal cliente: historial completo por patente
 async function getHistorialByPatente(patente) {
-  // Traemos todos los registros de la patente
   const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
