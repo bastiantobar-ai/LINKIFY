@@ -172,6 +172,24 @@ async function getHistorialByPatente(patente) {
   return res.json();
 }
 
+async function registrarConsulta(busqueda, tipo, numero_caso, patente) {
+  try {
+    await supabaseFetch("consultas_cliente", {
+      method: "POST",
+      body: JSON.stringify({
+        busqueda,
+        tipo,
+        numero_caso: numero_caso || null,
+        patente: patente || null,
+        created_at: new Date().toISOString(),
+      }),
+    });
+  } catch (e) {
+    // No interrumpir la búsqueda si falla el registro
+    console.warn("No se pudo registrar consulta:", e.message);
+  }
+}
+
 async function getComentariosByCaso(numero) {
   const res = await supabaseFetch(`comentarios?numero_caso=eq.${encodeURIComponent(numero)}&order=created_at.desc`);
   if (!res.ok) throw new Error(await res.text());
@@ -888,6 +906,8 @@ function PortalCliente({ onVolver }) {
         setHistorico(hist);
         const comms = await getComentariosByCaso(casoReciente.numero_caso);
         setComentarios(comms);
+        const tipo = /^\d+$/.test(q) ? 'numero_caso' : 'patente';
+        await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
       }
     } catch (e) {
       setErr("Error al buscar: " + e.message);
