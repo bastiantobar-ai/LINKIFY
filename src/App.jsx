@@ -713,7 +713,13 @@ function ProgresoCliente({ historico, comentarios = [] }) {
   // (cuando entró a ese estado por primera vez) para tener fecha_ingreso correcta,
   // y la ÚLTIMA para tener fecha_listo correcta.
   // El estado actual es el del último registro del array.
-  const casoActual  = historico[historico.length - 1];
+  // El estado actual es el de mayor orden en ESTADO_MAP entre todos los registros
+  // Esto evita que un registro antiguo con fecha posterior aparezca como estado actual
+  const casoActual = historico.reduce((best, fila) => {
+    const ordenFila = getOrden(fila.estado_operativo?.toUpperCase().trim());
+    const ordenBest = getOrden(best?.estado_operativo?.toUpperCase().trim() ?? "");
+    return ordenFila > ordenBest ? fila : best;
+  }, historico[0]);
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
   // histMapFirst: primera fila de cada estado → fecha_ingreso real
