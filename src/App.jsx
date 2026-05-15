@@ -714,16 +714,20 @@ function ProgresoCliente({ historico, comentarios = [] }) {
   // Construimos un mapa de TODAS las apariciones de cada estado (pueden ser múltiples por retrocesos)
   // histMapFirst: primera aparición cronológica → fecha de inicio
   // histMapLast:  última aparición cronológica  → fecha de fin
-  // histSet: conjunto de estados que aparecieron en el historial
+  // histSet: estados que aparecieron en el historial
+  // histCerrado: estados donde TODAS sus apariciones tienen fecha_listo (están cerrados)
+  //              Si alguna aparición no tiene fecha_listo, el estado NO está cerrado
   const histMapFirst = {};
   const histMapLast  = {};
   const histSet      = new Set();
+  const histAbierto  = new Set(); // estados con al menos una fila sin fecha_listo
   for (const fila of historico) {
     const k = normalizeKey(fila.estado_operativo?.toUpperCase().trim());
     if (!k) continue;
     histSet.add(k);
     if (!histMapFirst[k]) histMapFirst[k] = fila;
     histMapLast[k] = fila;
+    if (!fila.fecha_listo) histAbierto.add(k);
   }
 
   const comentMap = {};
@@ -774,8 +778,10 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const filaFirst  = histMapFirst[s.key];
                 const filaLast   = histMapLast[s.key];
                 const tieneInfo  = completado || activo;
-                // Retrocedido: estado de orden MAYOR al actual que existió pero ya no es el actual
-                const retroced   = !completado && !activo && histSet.has(s.key);
+                // Retrocedido: existió en el historial, no es el actual, no es completado,
+                // Y todas sus apariciones tienen fecha_listo (está cerrado)
+                // Si tiene alguna fila sin fecha_listo → no es retrocedido, es relevante
+                const retroced   = !completado && !activo && histSet.has(s.key) && !histAbierto.has(s.key);
                 const inicioStr  = filaFirst ? formatFechaHora(filaFirst.fecha_ingreso, filaFirst.hora_ingreso) : null;
                 const listoStr   = filaLast  ? formatFechaHora(filaLast.fecha_listo,   filaLast.hora_listo)    : null;
 
