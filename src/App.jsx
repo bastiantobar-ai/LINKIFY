@@ -134,15 +134,23 @@ function filtrarProcesoReciente(todos) {
   if (!todos.length) return [];
   const tieneEntregado = todos.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
   if (tieneEntregado) {
-    return [...todos].sort((a, b) => {
+    // Con entregado: tomar solo el id_sistema más alto (el proceso final)
+    const maxId = Math.max(...todos.map(f => f.id_sistema));
+    const proceso = todos.filter(f => f.id_sistema === maxId);
+    return proceso.sort((a, b) => {
       const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
       const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
       return da - db;
     });
   }
+  // Sin entregado: tomar solo el id_sistema más alto
   const maxId = Math.max(...todos.map(f => f.id_sistema));
   return todos.filter(f => f.id_sistema === maxId)
               .sort((a, b) => {
+                // Nulls primero (registros sin fecha van al inicio del proceso)
+                if (!a.fecha_ingreso && !b.fecha_ingreso) return 0;
+                if (!a.fecha_ingreso) return -1;
+                if (!b.fecha_ingreso) return 1;
                 const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
                 const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
                 return da - db;
@@ -150,14 +158,14 @@ function filtrarProcesoReciente(todos) {
 }
 
 async function getHistorialByNumero(numero) {
-  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=fecha_ingreso.asc,hora_ingreso.asc`);
+  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=id_sistema.asc,fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
   return filtrarProcesoReciente(todos);
 }
 
 async function getHistorialByPatente(patente) {
-  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=fecha_ingreso.asc,hora_ingreso.asc`);
+  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=id_sistema.asc,fecha_ingreso.asc,hora_ingreso.asc`);
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
   return filtrarProcesoReciente(todos);
@@ -717,15 +725,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     if (!k) continue;
     if (!filasPorEstado[k]) filasPorEstado[k] = [];
     filasPorEstado[k].push(fila);
-  }
-
-  // DEBUG: log filasPorEstado keys
-  if (typeof window !== 'undefined') {
-    console.log('[ProgresoCliente] ordenActual:', ordenActual, 'estado:', casoActual?.estado_operativo);
-    console.log('[ProgresoCliente] filasPorEstado keys:', Object.keys(filasPorEstado));
-    Object.entries(filasPorEstado).forEach(([k, filas]) => {
-      console.log(`  ${k}: ${filas.length} filas, abierta=${filas.some(f=>!f.fecha_listo)}, filas:`, filas.map(f=>({inicio:f.fecha_ingreso, fin:f.fecha_listo})));
-    });
   }
 
   // Para un subestado dado, elige qué fila usar para inicio y fin:
