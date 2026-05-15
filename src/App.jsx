@@ -3,11 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// ── Auth simple por contraseña ────────────────────────────────────
-// Contraseña definida como variable de entorno o hardcoded aquí
 const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "";
-
-// ── Estado map ───────────────────────────────────────────────────
 
 const ESTADO_MAP = {
   "PENDIENTE":                { principal: "Diagnostico", subestado: "Pendiente de diagnóstico", orden: 0 },
@@ -38,7 +34,6 @@ const ESTADOS = {
   Listo:       { label: "Listo",       color: "#1D9E75", bg: "#E1F5EE", text: "#085041", border: "#1D9E7530" },
 };
 
-// Kavak brand colors
 const KAVAK_BLUE = "#0066FF";
 const KAVAK_BLUE_DARK = "#0052CC";
 const KAVAK_BLUE_LIGHT = "#E5F0FF";
@@ -71,8 +66,6 @@ function getOrden(keyEstado) {
 
 function formatFechaHora(fecha, hora) {
   if (!fecha) return null;
-  // Parseamos la fecha directamente sin convertir zona horaria
-  // fecha viene como "YYYY-MM-DD" desde Supabase
   const [y, m, d] = fecha.split("-");
   const f = `${d}-${m}-${y}`;
   const h = hora ? hora.slice(0, 5) : null;
@@ -92,7 +85,17 @@ function haceHoras(fecha) {
   return (Date.now() - new Date(fecha).getTime()) / (1000 * 60 * 60);
 }
 
-// ── API REST (usa token si disponible) ────────────────────────────
+// ── Ubicacion mapper ──────────────────────────────────────────────
+
+function formatUbicacion(ubicacion) {
+  if (!ubicacion) return null;
+  const u = ubicacion.toUpperCase().trim();
+  if (u.includes("DEPOT")) return "Kavak Schiappacasse";
+  if (u.includes("MBI")) return "Kavak Mall Barrio Independencia";
+  return ubicacion;
+}
+
+// ── API REST ──────────────────────────────────────────────────────
 
 function supabaseFetch(path, options = {}) {
   const url = `${SUPABASE_URL}/rest/v1/${path}`;
@@ -106,9 +109,7 @@ function supabaseFetch(path, options = {}) {
   return fetch(url, { ...options, headers });
 }
 
-// bbdd_cc: solo lectura, sin token (para cliente) y con token (para interno)
 async function getCasos() {
-  // Vista bbdd_cc_activos: ya devuelve solo el registro más reciente por patente
   const res = await supabaseFetch("bbdd_cc_activos?order=fecha_ingreso.desc", {});
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -129,24 +130,16 @@ async function addComentario(data) {
   return res.json();
 }
 
-// Portal cliente: historial completo por número de caso
-// Filtra solo el proceso más reciente (id_sistema más alto) y lo devuelve ordenado asc
-// Dado todos los registros de una patente/caso:
-// - Si hay ENTREGADO A CLIENTE → devuelve TODOS los registros ordenados asc
-//   (el historial completo del proceso hasta la entrega)
-// - Si no → devuelve solo los del id_sistema más alto (proceso más reciente)
 function filtrarProcesoReciente(todos) {
   if (!todos.length) return [];
   const tieneEntregado = todos.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
   if (tieneEntregado) {
-    // Devolvemos todo el historial ordenado cronológicamente
     return [...todos].sort((a, b) => {
       const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
       const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
       return da - db;
     });
   }
-  // Solo el proceso más reciente por id_sistema
   const maxId = Math.max(...todos.map(f => f.id_sistema));
   return todos.filter(f => f.id_sistema === maxId)
               .sort((a, b) => {
@@ -183,7 +176,6 @@ async function registrarConsulta(busqueda, tipo, numero_caso, patente) {
       }),
     });
   } catch (e) {
-    // No interrumpir la búsqueda si falla el registro
     console.warn("No se pudo registrar consulta:", e.message);
   }
 }
@@ -246,8 +238,6 @@ function Modal({ title, onClose, children }) {
 function PantallaInicio({ onCliente, onInterno }) {
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column" }}>
-
-      {/* Hero con imagen y card blanco encima */}
       <div style={{
         position: "relative", width: "100%", height: 300,
         backgroundImage: "url('https://cdn.buttercms.com/QQFdpmdKRHS9NlKqG5oU')",
@@ -271,16 +261,13 @@ function PantallaInicio({ onCliente, onInterno }) {
         </div>
       </div>
 
-      {/* Tarjetas */}
       <div style={{
         flex: 1, display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
         padding: "36px 16px 48px",
       }}>
-      {/* Tarjetas */}
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 560 }}>
 
-        {/* Cliente */}
         <button onClick={onCliente} style={{
           flex: "1 1 220px", background: "#fff", border: "1px solid #e8e8e8",
           borderRadius: 16, padding: "28px 24px", cursor: "pointer", textAlign: "left",
@@ -307,7 +294,6 @@ function PantallaInicio({ onCliente, onInterno }) {
           </div>
         </button>
 
-        {/* Interno */}
         <button onClick={onInterno} style={{
           flex: "1 1 220px", background: KAVAK_BLUE, border: "none",
           borderRadius: 16, padding: "28px 24px", cursor: "pointer", textAlign: "left",
@@ -339,7 +325,7 @@ function PantallaInicio({ onCliente, onInterno }) {
   );
 }
 
-// ── Login internos (contraseña simple) ───────────────────────────
+// ── Login internos ────────────────────────────────────────────────
 
 function LoginInterno({ onLogin, onVolver }) {
   const [email, setEmail]       = useState("");
@@ -565,7 +551,7 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial
               <span style={{ fontSize: 12, color: "#aaa" }}>✅ Listo: {formatFechaHora(caso.fecha_listo, caso.hora_listo)}</span>
             )}
             {caso.ubicacion && (
-              <span style={{ fontSize: 12, color: "#aaa" }}>📍 {caso.ubicacion}</span>
+              <span style={{ fontSize: 12, color: "#aaa" }}>📍 {formatUbicacion(caso.ubicacion)}</span>
             )}
           </div>
           {ultimoComentario
@@ -708,13 +694,6 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 // ── Progreso cliente ──────────────────────────────────────────────
 
 function ProgresoCliente({ historico, comentarios = [] }) {
-  // El histórico viene ordenado asc por fecha_ingreso.
-  // Para cada estado_operativo nos quedamos con la PRIMERA aparición
-  // (cuando entró a ese estado por primera vez) para tener fecha_ingreso correcta,
-  // y la ÚLTIMA para tener fecha_listo correcta.
-  // El estado actual es el del último registro del array.
-  // El estado actual es el de mayor orden en ESTADO_MAP entre todos los registros
-  // Esto evita que un registro antiguo con fecha posterior aparezca como estado actual
   const casoActual = historico.reduce((best, fila) => {
     const ordenFila = getOrden(fila.estado_operativo?.toUpperCase().trim());
     const ordenBest = getOrden(best?.estado_operativo?.toUpperCase().trim() ?? "");
@@ -722,9 +701,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
   }, historico[0]);
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
-  // histMapFirst: primera fila de cada estado → fecha_ingreso real
-  // histMapLast:  última fila de cada estado  → fecha_listo real
-  // Normalizamos PENDIENTE → PENDIENTE DE DIAGNÓSTICO para unificar
   const normalizeKey = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
   const histMapFirst = {};
   const histMapLast  = {};
@@ -735,7 +711,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     histMapLast[k] = fila;
   }
 
-  // Mapa de estado_operativo → comentarios de ese subestado (ordenados desc)
   const comentMap = {};
   for (const c of comentarios) {
     const k = c.estado?.toUpperCase().trim();
@@ -784,11 +759,8 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const filaFirst  = histMapFirst[s.key];
                 const filaLast   = histMapLast[s.key];
                 const tieneInfo  = completado || activo;
-                // Si existe en el historial pero es futuro → estuvo aquí pero retrocedió
                 const retroced   = !completado && !activo && !!filaFirst;
-                // fecha inicio = primera vez que entró a este estado
                 const inicioStr  = filaFirst ? formatFechaHora(filaFirst.fecha_ingreso, filaFirst.hora_ingreso) : null;
-                // fecha fin = última fila del estado (tiene el fecha_listo cuando se completó)
                 const listoStr   = filaLast  ? formatFechaHora(filaLast.fecha_listo,   filaLast.hora_listo)    : null;
 
                 return (
@@ -853,7 +825,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                         )}
                       </div>
                     )}
-                    {/* Comentarios de este subestado */}
                     {tieneInfo && comentMap[s.key] && comentMap[s.key].length > 0 && (
                       <div style={{ marginTop: 8, marginLeft: 30, display: "flex", flexDirection: "column", gap: 6 }}>
                         {comentMap[s.key].map(c => (
@@ -923,6 +894,9 @@ function PortalCliente({ onVolver }) {
   const mapped = caso ? getMapped(caso.estado_operativo) : null;
   const cfg    = mapped ? ESTADOS[mapped.principal] : null;
 
+  // Busca el comentario inicial: primer registro del historial que tenga comentario
+  const comentarioInicial = historico.find(h => h.comentario && h.comentario.trim() !== "")?.comentario || null;
+
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 16px 48px" }}>
       <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -969,7 +943,28 @@ function PortalCliente({ onVolver }) {
             <SubBadge subestado={mapped.subestado} principal={mapped.principal} />
           </div>
           <p style={{ margin: "4px 0 0", fontSize: 15, color: "#555", fontWeight: 500 }}>🚗 {caso.patente}</p>
-          {caso.ubicacion && <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 {caso.ubicacion}</p>}
+          {caso.ubicacion && (
+            <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 {formatUbicacion(caso.ubicacion)}</p>
+          )}
+
+          {/* Tarjeta Solicitud inicial */}
+          {comentarioInicial && (
+            <div style={{
+              background: KAVAK_BLUE_LIGHT,
+              border: `1px solid ${KAVAK_BLUE}20`,
+              borderLeft: `4px solid ${KAVAK_BLUE}`,
+              borderRadius: "0 10px 10px 0",
+              padding: "12px 14px",
+              marginTop: 14,
+            }}>
+              <p style={{ margin: "0 0 4px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>
+                📋 Solicitud inicial
+              </p>
+              <p style={{ margin: 0, fontSize: 14, color: "#333" }}>
+                {comentarioInicial}
+              </p>
+            </div>
+          )}
 
           <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 16, marginTop: 16 }}>
             <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 600, color: "#555" }}>Estado del proceso</p>
@@ -1044,7 +1039,10 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
         position: "sticky", top: 0, zIndex: 100,
       }}>
         <div style={{ padding: "14px 20px 14px 0", marginRight: 16, borderRight: "1px solid #ececec" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 15, color: KAVAK_BLUE, letterSpacing: 1 }}>KAVAK</span><span style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>· Sigue Tu Caso</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 15, color: KAVAK_BLUE, letterSpacing: 1 }}>KAVAK</span>
+            <span style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>· Sigue Tu Caso</span>
+          </div>
         </div>
         {[
           { key: "backlog", label: "Backlog" },
@@ -1054,7 +1052,7 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
             padding: "16px 18px", background: "none", border: "none", cursor: "pointer",
             fontSize: 14, fontWeight: tab === t.key ? 600 : 400,
             color: tab === t.key ? KAVAK_BLUE : "#888",
-            borderBottom: tab === t.key ? "2px solid ${KAVAK_BLUE}" : "2px solid transparent",
+            borderBottom: tab === t.key ? `2px solid ${KAVAK_BLUE}` : "2px solid transparent",
             display: "flex", alignItems: "center", gap: 6,
           }}>
             {t.label}
@@ -1128,7 +1126,6 @@ export default function App() {
   const [vista, setVista]       = useState("inicio");
   const [userEmail, setUserEmail] = useState("");
 
-  // Detecta ?vista=cliente en la URL para ir directo al portal cliente
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("vista") === "cliente") {
