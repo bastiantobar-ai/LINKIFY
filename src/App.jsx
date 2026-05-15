@@ -719,6 +719,15 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     filasPorEstado[k].push(fila);
   }
 
+  // DEBUG: log filasPorEstado keys
+  if (typeof window !== 'undefined') {
+    console.log('[ProgresoCliente] ordenActual:', ordenActual, 'estado:', casoActual?.estado_operativo);
+    console.log('[ProgresoCliente] filasPorEstado keys:', Object.keys(filasPorEstado));
+    Object.entries(filasPorEstado).forEach(([k, filas]) => {
+      console.log(`  ${k}: ${filas.length} filas, abierta=${filas.some(f=>!f.fecha_listo)}, filas:`, filas.map(f=>({inicio:f.fecha_ingreso, fin:f.fecha_listo})));
+    });
+  }
+
   // Para un subestado dado, elige qué fila usar para inicio y fin:
   // - Si hay una fila sin fecha_listo (abierta): inicio = esa fila, fin = null
   // - Si todas cerradas: inicio = primera, fin = última
