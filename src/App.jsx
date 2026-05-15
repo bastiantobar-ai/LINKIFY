@@ -713,23 +713,29 @@ function ProgresoCliente({ historico, comentarios = [] }) {
 
   const normalizeKey = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
 
-  // Construimos un mapa de TODAS las apariciones de cada estado (pueden ser múltiples por retrocesos)
-  // histMapFirst: primera aparición cronológica → fecha de inicio
-  // histMapLast:  última aparición cronológica  → fecha de fin
-  // histSet: estados que aparecieron en el historial
-  // histCerrado: estados donde TODAS sus apariciones tienen fecha_listo (están cerrados)
-  //              Si alguna aparición no tiene fecha_listo, el estado NO está cerrado
-  const histMapFirst = {};
-  const histMapLast  = {};
+  // Para cada subestado construimos:
+  // - histActivo[k]: la fila SIN fecha_listo (estado abierto actual) si existe
+  // - histMapFirst[k]: primera fila cronológica (para estados completados sin retroceso)
+  // - histMapLast[k]: última fila cerrada (para fecha_listo de estados completados)
+  // - histSet: todos los estados que aparecieron
+  // - histAbierto: estados con al menos una fila sin fecha_listo
+  const histActivo   = {}; // fila abierta (sin fecha_listo) por estado
+  const histMapFirst = {}; // primera aparición cerrada
+  const histMapLast  = {}; // última aparición (cerrada o abierta)
   const histSet      = new Set();
-  const histAbierto  = new Set(); // estados con al menos una fila sin fecha_listo
+  const histAbierto  = new Set();
+
   for (const fila of historico) {
     const k = normalizeKey(fila.estado_operativo?.toUpperCase().trim());
     if (!k) continue;
     histSet.add(k);
-    if (!histMapFirst[k]) histMapFirst[k] = fila;
-    histMapLast[k] = fila;
-    if (!fila.fecha_listo) histAbierto.add(k);
+    if (!fila.fecha_listo) {
+      histAbierto.add(k);
+      histActivo[k] = fila; // guardamos la fila abierta
+    } else {
+      if (!histMapFirst[k]) histMapFirst[k] = fila;
+      histMapLast[k] = fila;
+    }
   }
 
   const comentMap = {};
@@ -777,8 +783,12 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const ordenS     = getOrden(s.key);
                 const completado = ordenS < ordenActual;
                 const activo     = ordenS === ordenActual;
-                const filaFirst  = histMapFirst[s.key];
-                const filaLast   = histMapLast[s.key];
+                // Si el estado está activo ahora (abierto): usar esa fila para fecha inicio
+                // Si está completado: usar histMapFirst para inicio, histMapLast para fin
+                // Si está retrocedido: usar histMapFirst para inicio, histMapLast para fin
+                const filaActiva = histActivo[s.key];
+                const filaFirst  = filaActiva || histMapFirst[s.key];
+                const filaLast   = filaActiva ? null : histMapLast[s.key];
                 // Retrocedido: existió en el historial, no es el actual, no es completado,
                 // Y todas sus apariciones tienen fecha_listo (está cerrado)
                 // Si tiene alguna fila sin fecha_listo → no es retrocedido, es relevante
