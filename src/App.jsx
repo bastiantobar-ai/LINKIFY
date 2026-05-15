@@ -782,9 +782,15 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                       <span style={{
                         fontSize: 13, fontWeight: activo ? 600 : 400,
                         color: completado ? "#aaa" : activo ? cfg.text : "#ccc",
-                        textDecoration: completado ? "line-through" : "none",
                         flex: 1,
                       }}>{s.label}</span>
+                      {completado && (
+                        <span style={{
+                          background: cfg.bg, color: cfg.text,
+                          border: `1px solid ${cfg.border}`,
+                          borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500,
+                        }}>Completado ✓</span>
+                      )}
                       {activo && (
                         <span style={{
                           background: cfg.color, color: "#fff",
