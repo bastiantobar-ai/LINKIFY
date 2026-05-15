@@ -132,29 +132,32 @@ async function addComentario(data) {
 
 function filtrarProcesoReciente(todos) {
   if (!todos.length) return [];
-  const tieneEntregado = todos.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
-  if (tieneEntregado) {
-    // Con entregado: tomar solo el id_sistema más alto (el proceso final)
-    const maxId = Math.max(...todos.map(f => f.id_sistema));
-    const proceso = todos.filter(f => f.id_sistema === maxId);
-    return proceso.sort((a, b) => {
-      const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
-      const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
-      return da - db;
-    });
-  }
-  // Sin entregado: tomar solo el id_sistema más alto
+
+  // Tomar solo el id_sistema más alto (proceso más reciente)
   const maxId = Math.max(...todos.map(f => f.id_sistema));
-  return todos.filter(f => f.id_sistema === maxId)
-              .sort((a, b) => {
-                // Nulls primero (registros sin fecha van al inicio del proceso)
-                if (!a.fecha_ingreso && !b.fecha_ingreso) return 0;
-                if (!a.fecha_ingreso) return -1;
-                if (!b.fecha_ingreso) return 1;
-                const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
-                const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
-                return da - db;
-              });
+  const proceso = todos.filter(f => f.id_sistema === maxId);
+
+  // Descartar filas sin ninguna fecha (registros corruptos)
+  const validos = proceso.filter(f => f.fecha_ingreso || f.fecha_listo);
+  const base = validos.length > 0 ? validos : proceso;
+
+  // Descartar ENTREGADO A CLIENTE sin fecha_listo:
+  // ese registro se crea al inicio del proceso pero solo es válido cuando tiene fecha_listo
+  const resultado = base.filter(f => {
+    if (f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE" && !f.fecha_listo) return false;
+    return true;
+  });
+  const final = resultado.length > 0 ? resultado : base;
+
+  // Ordenar cronológicamente por fecha_ingreso asc
+  return final.sort((a, b) => {
+    if (!a.fecha_ingreso && !b.fecha_ingreso) return 0;
+    if (!a.fecha_ingreso) return -1;
+    if (!b.fecha_ingreso) return 1;
+    const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
+    const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
+    return da - db;
+  });
 }
 
 async function getHistorialByNumero(numero) {
@@ -1079,8 +1082,8 @@ function PortalCliente({ onVolver, modoInterno = false }) {
         if (!modoInterno) {
           const tipo = /^\d+$/.test(q) ? 'numero_caso' : 'patente';
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
-          // Mostrar feedback si el vehículo fue entregado
-          const esEntregado = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
+          // Mostrar feedback solo si ENTREGADO A CLIENTE tiene fecha_listo (entrega real)
+          const esEntregado = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE" && f.fecha_listo);
           if (esEntregado) setShowFeedback(true);
         }
       }
