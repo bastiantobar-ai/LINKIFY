@@ -703,10 +703,12 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 // ── Progreso cliente ──────────────────────────────────────────────
 
 function ProgresoCliente({ historico, comentarios = [] }) {
-  // Estado actual = el registro sin fecha_listo (abierto), o el último cronológico
-  // Esto maneja correctamente los retrocesos: si un vehículo vuelve a un estado menor,
-  // ese ES el estado actual aunque no sea el de mayor orden histórico
-  const casoActual = historico.find(f => !f.fecha_listo) || historico[historico.length - 1];
+  // Estado actual = último registro cronológico del historial
+  // El historial llega ordenado asc por fecha_ingreso desde Supabase,
+  // así que el último elemento siempre es el estado más reciente.
+  // Para retrocesos: si el último registro no tiene fecha_listo → es el estado abierto actual.
+  // Si todos tienen fecha_listo (caso raro) → igual usamos el último cronológico.
+  const casoActual = historico[historico.length - 1];
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
   const normalizeKey = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
@@ -777,11 +779,11 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const activo     = ordenS === ordenActual;
                 const filaFirst  = histMapFirst[s.key];
                 const filaLast   = histMapLast[s.key];
-                const tieneInfo  = completado || activo;
                 // Retrocedido: existió en el historial, no es el actual, no es completado,
                 // Y todas sus apariciones tienen fecha_listo (está cerrado)
                 // Si tiene alguna fila sin fecha_listo → no es retrocedido, es relevante
                 const retroced   = !completado && !activo && histSet.has(s.key) && !histAbierto.has(s.key);
+                const tieneInfo  = completado || activo || retroced;
                 const inicioStr  = filaFirst ? formatFechaHora(filaFirst.fecha_ingreso, filaFirst.hora_ingreso) : null;
                 const listoStr   = filaLast  ? formatFechaHora(filaLast.fecha_listo,   filaLast.hora_listo)    : null;
 
