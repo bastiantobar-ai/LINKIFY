@@ -1084,7 +1084,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
           // Mostrar feedback solo si ENTREGADO A CLIENTE tiene fecha_listo (entrega real)
           const esEntregado = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE" && f.fecha_listo);
-          if (esEntregado) setShowFeedback(true);
+          if (esEntregado) setTimeout(() => setShowFeedback(true), 10000);
         }
       }
     } catch (e) {
@@ -1225,6 +1225,23 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             </svg>
             Hablar con un asesor
           </a>
+          <button
+            onClick={() => setShowFeedback(true)}
+            style={{
+              marginTop: 12,
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "#fff", color: KAVAK_BLUE,
+              border: `1px solid ${KAVAK_BLUE}40`,
+              borderRadius: 12, padding: "11px 22px",
+              fontWeight: 600, fontSize: 14,
+              cursor: "pointer",
+              transition: "transform 0.15s, box-shadow 0.15s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 4px 16px ${KAVAK_BLUE}20`; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+          >
+            💬 Dejar comentario
+          </button>
           <button onClick={onVolver} style={{
             marginTop: 16, background: "none", border: "none", cursor: "pointer",
             fontSize: 12, color: "#ccc", textDecoration: "underline",
