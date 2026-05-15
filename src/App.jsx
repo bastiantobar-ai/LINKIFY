@@ -180,6 +180,15 @@ async function registrarConsulta(busqueda, tipo, numero_caso, patente) {
   }
 }
 
+async function saveFeedback(data) {
+  const res = await supabaseFetch("feedback_cliente", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 async function getComentariosByCaso(numero) {
   const res = await supabaseFetch(`comentarios?numero_caso=eq.${encodeURIComponent(numero)}&order=created_at.desc`);
   if (!res.ok) throw new Error(await res.text());
@@ -868,6 +877,163 @@ function ProgresoCliente({ historico, comentarios = [] }) {
   );
 }
 
+// ── Modal Feedback ───────────────────────────────────────────────
+
+function ModalFeedback({ caso, onClose }) {
+  const [puntuacion, setPuntuacion] = useState(0);
+  const [hover, setHover]           = useState(0);
+  const [sugerencia, setSugerencia] = useState("");
+  const [paso, setPaso]             = useState(1); // 1: puntuacion, 2: sugerencia, 3: gracias
+  const [saving, setSaving]         = useState(false);
+  const [err, setErr]               = useState("");
+
+  async function handleEnviar() {
+    if (puntuacion === 0) { setErr("Por favor selecciona una puntuación"); return; }
+    setSaving(true); setErr("");
+    try {
+      await saveFeedback({
+        numero_caso: caso.numero_caso,
+        patente: caso.patente,
+        puntuacion,
+        sugerencia: sugerencia.trim() || null,
+      });
+      setPaso(3);
+    } catch (e) {
+      setErr("No se pudo guardar. Intenta de nuevo.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const estrellaLabels = ["", "Muy malo", "Malo", "Regular", "Bueno", "Excelente"];
+  const estrellasColor = puntuacion >= 4 ? "#1D9E75" : puntuacion === 3 ? "#EF9F27" : puntuacion > 0 ? "#E24B4A" : "#ccc";
+
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      zIndex: 2000, padding: 16,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: "#fff", borderRadius: 20, padding: "32px 28px",
+        maxWidth: 420, width: "100%",
+        boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
+        textAlign: "center",
+      }}>
+
+        {paso === 3 ? (
+          <>
+            <div style={{ fontSize: 52, marginBottom: 12 }}>🎉</div>
+            <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
+              ¡Gracias por tu opinión!
+            </h2>
+            <p style={{ margin: "0 0 24px", fontSize: 14, color: "#888" }}>
+              Tu feedback nos ayuda a mejorar la experiencia para todos los clientes Kavak.
+            </p>
+            <button onClick={onClose} style={{
+              padding: "10px 28px", borderRadius: 10, border: "none",
+              background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
+              cursor: "pointer", fontSize: 14,
+            }}>Cerrar</button>
+          </>
+        ) : paso === 1 ? (
+          <>
+            <div style={{
+              background: KAVAK_BLUE, borderRadius: 14, padding: "8px 20px",
+              display: "inline-block", marginBottom: 16,
+            }}>
+              <KavakLogo dark={false} small />
+            </div>
+            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>
+              ¿Cómo fue tu experiencia?
+            </h2>
+            <p style={{ margin: "0 0 24px", fontSize: 13, color: "#888" }}>
+              Califica del 1 al 5 qué tan útil te resultó esta herramienta de seguimiento
+            </p>
+
+            {/* Estrellas */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+              {[1, 2, 3, 4, 5].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setPuntuacion(n)}
+                  onMouseEnter={() => setHover(n)}
+                  onMouseLeave={() => setHover(0)}
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    fontSize: 40, padding: "2px 4px",
+                    transform: (hover || puntuacion) >= n ? "scale(1.15)" : "scale(1)",
+                    transition: "transform 0.1s",
+                    filter: (hover || puntuacion) >= n ? "none" : "grayscale(1) opacity(0.3)",
+                  }}
+                >⭐</button>
+              ))}
+            </div>
+
+            {(hover > 0 || puntuacion > 0) && (
+              <p style={{ margin: "0 0 20px", fontSize: 13, fontWeight: 600, color: estrellasColor }}>
+                {estrellaLabels[hover || puntuacion]}
+              </p>
+            )}
+
+            {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "0 0 12px" }}>{err}</p>}
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => { if (puntuacion === 0) { setErr("Por favor selecciona una puntuación"); return; } setPaso(2); }} style={{
+                flex: 1, padding: "11px 0", borderRadius: 10, border: "none",
+                background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
+                cursor: "pointer", fontSize: 14,
+              }}>Continuar →</button>
+              <button onClick={onClose} style={{
+                padding: "11px 16px", borderRadius: 10,
+                border: "1px solid #e0e0e0", background: "transparent",
+                color: "#aaa", cursor: "pointer", fontSize: 13,
+              }}>Omitir</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>
+              {["", "😞", "😕", "😐", "😊", "🤩"][puntuacion]}
+            </div>
+            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>
+              ¿Tienes alguna sugerencia?
+            </h2>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#888" }}>
+              Cuéntanos cómo podríamos mejorar esta herramienta (opcional)
+            </p>
+            <textarea
+              style={{
+                width: "100%", minHeight: 100, padding: "10px 12px",
+                borderRadius: 10, border: "1px solid #e0e0e0",
+                background: "#fafafa", fontSize: 14, color: "#1a1a1a",
+                resize: "vertical", boxSizing: "border-box", outline: "none",
+                marginBottom: 16,
+              }}
+              placeholder="Ej: Me gustaría recibir notificaciones cuando cambie el estado..."
+              value={sugerencia}
+              onChange={e => setSugerencia(e.target.value)}
+            />
+            {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "0 0 12px" }}>{err}</p>}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={handleEnviar} disabled={saving} style={{
+                flex: 1, padding: "11px 0", borderRadius: 10, border: "none",
+                background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
+                cursor: saving ? "wait" : "pointer", fontSize: 14,
+              }}>{saving ? "Enviando..." : "Enviar feedback"}</button>
+              <button onClick={() => setPaso(1)} style={{
+                padding: "11px 16px", borderRadius: 10,
+                border: "1px solid #e0e0e0", background: "transparent",
+                color: "#aaa", cursor: "pointer", fontSize: 13,
+              }}>← Volver</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Portal Cliente ────────────────────────────────────────────────
 
 function PortalCliente({ onVolver, modoInterno = false }) {
@@ -877,6 +1043,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
   const [comentarios, setComentarios] = useState([]);
   const [loading, setLoading]         = useState(false);
   const [err, setErr]                 = useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
 
   async function buscar() {
     const q = busqueda.trim();
@@ -898,6 +1065,9 @@ function PortalCliente({ onVolver, modoInterno = false }) {
         if (!modoInterno) {
           const tipo = /^\d+$/.test(q) ? 'numero_caso' : 'patente';
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
+          // Mostrar feedback si el vehículo fue entregado
+          const esEntregado = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE");
+          if (esEntregado) setShowFeedback(true);
         }
       }
     } catch (e) {
@@ -1006,6 +1176,11 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Modal Feedback */}
+      {showFeedback && caso && (
+        <ModalFeedback caso={caso} onClose={() => setShowFeedback(false)} />
       )}
 
       {/* Botón WhatsApp y volver — solo en portal cliente real */}
