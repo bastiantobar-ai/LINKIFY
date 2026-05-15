@@ -694,19 +694,25 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
 // ── Progreso cliente ──────────────────────────────────────────────
 
 function ProgresoCliente({ historico, comentarios = [] }) {
-  const casoActual = historico.reduce((best, fila) => {
-    const ordenFila = getOrden(fila.estado_operativo?.toUpperCase().trim());
-    const ordenBest = getOrden(best?.estado_operativo?.toUpperCase().trim() ?? "");
-    return ordenFila > ordenBest ? fila : best;
-  }, historico[0]);
+  // Estado actual = el registro sin fecha_listo (abierto), o el último cronológico
+  // Esto maneja correctamente los retrocesos: si un vehículo vuelve a un estado menor,
+  // ese ES el estado actual aunque no sea el de mayor orden histórico
+  const casoActual = historico.find(f => !f.fecha_listo) || historico[historico.length - 1];
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
   const normalizeKey = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
+
+  // Construimos un mapa de TODAS las apariciones de cada estado (pueden ser múltiples por retrocesos)
+  // histMapFirst: primera aparición cronológica → fecha de inicio
+  // histMapLast:  última aparición cronológica  → fecha de fin
+  // histSet: conjunto de estados que aparecieron en el historial
   const histMapFirst = {};
   const histMapLast  = {};
+  const histSet      = new Set();
   for (const fila of historico) {
     const k = normalizeKey(fila.estado_operativo?.toUpperCase().trim());
     if (!k) continue;
+    histSet.add(k);
     if (!histMapFirst[k]) histMapFirst[k] = fila;
     histMapLast[k] = fila;
   }
@@ -759,7 +765,8 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const filaFirst  = histMapFirst[s.key];
                 const filaLast   = histMapLast[s.key];
                 const tieneInfo  = completado || activo;
-                const retroced   = !completado && !activo && !!filaFirst;
+                // Retrocedido: estado de orden MAYOR al actual que existió pero ya no es el actual
+                const retroced   = !completado && !activo && histSet.has(s.key);
                 const inicioStr  = filaFirst ? formatFechaHora(filaFirst.fecha_ingreso, filaFirst.hora_ingreso) : null;
                 const listoStr   = filaLast  ? formatFechaHora(filaLast.fecha_listo,   filaLast.hora_listo)    : null;
 
