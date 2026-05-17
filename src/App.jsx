@@ -1,4 +1,228 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+
+
+// ── Design system styles ──────────────────────────────────────────
+function InjectStyles() {
+  useEffect(() => {
+    const id = "kavak-design-system";
+    if (document.getElementById(id)) return;
+    const s = document.createElement("style");
+    s.id = id;
+    s.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+      :root {
+        --kavak-blue: #0066FF;
+        --kavak-blue-deep: #0050CC;
+        --kavak-blue-ink: #003FA3;
+        --kavak-blue-hint: #E6F0FF;
+        --kavak-blue-edge: #B8D2FF;
+        --ink: #0A0B14; --ink-2: #1B1D2A; --ink-3: #3A3D4D;
+        --muted: #6B6F80; --muted-2: #9B9EAB;
+        --line: #E8E9EE; --line-2: #F1F2F6;
+        --bg: #FAFAFB; --paper: #FFFFFF;
+        --r-xs:8px; --r-sm:12px; --r-md:16px; --r-lg:22px; --r-xl:28px;
+        --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: ui-monospace, "SF Mono", monospace;
+      }
+      .kds-topbar {
+        height:64px; padding:0 40px; display:flex; align-items:center;
+        justify-content:space-between; border-bottom:1px solid var(--line);
+        background:var(--paper); position:sticky; top:0; z-index:20;
+      }
+      .kds-brandmark {
+        font-family:var(--font-display); font-weight:800; font-size:20px;
+        letter-spacing:-0.04em; color:var(--ink); text-decoration:none;
+      }
+      .kds-brand-pill {
+        display:inline-flex; align-items:center; gap:8px; padding:5px 10px;
+        border:1px solid var(--line); border-radius:999px; font-size:12px; color:var(--muted);
+      }
+      .kds-brand-pill::before {
+        content:""; width:6px; height:6px; border-radius:999px;
+        background:var(--kavak-blue); display:inline-block;
+      }
+      .kds-hero {
+        flex:1; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+        min-height:calc(100vh - 64px);
+      }
+      .kds-hero__copy {
+        padding:56px 56px 48px 64px; display:flex; flex-direction:column;
+        justify-content:space-between; gap:40px;
+      }
+      .kds-eyebrow {
+        font-size:11px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase;
+        color:var(--kavak-blue); display:inline-flex; align-items:center; gap:10px;
+      }
+      .kds-eyebrow::before { content:""; width:22px; height:1px; background:var(--kavak-blue); display:inline-block; }
+      .kds-headline {
+        font-family:var(--font-display); font-weight:600;
+        font-size:clamp(52px,5.5vw,96px); line-height:0.94;
+        letter-spacing:-0.045em; color:var(--ink); margin:16px 0 0;
+      }
+      .kds-headline .dot { color:var(--kavak-blue); }
+      .kds-subhead { margin-top:20px; font-size:17px; line-height:1.5; color:var(--ink-3); max-width:440px; }
+      .kds-choices { display:grid; grid-template-columns:1.4fr 1fr; gap:14px; margin-top:auto; }
+      .kds-choice {
+        position:relative; padding:24px 24px 20px; border-radius:var(--r-lg);
+        background:var(--paper); border:1px solid var(--line); display:flex;
+        flex-direction:column; gap:16px; text-align:left; cursor:pointer;
+        transition:transform .25s cubic-bezier(.2,.7,.2,1), border-color .2s, box-shadow .25s;
+        color:inherit; overflow:hidden;
+      }
+      .kds-choice:hover { transform:translateY(-2px); border-color:var(--ink); box-shadow:0 24px 40px -28px rgba(10,11,20,.2); }
+      .kds-choice--primary { background:var(--kavak-blue); border-color:var(--kavak-blue); color:#fff; }
+      .kds-choice--primary:hover { background:var(--kavak-blue-deep); border-color:var(--kavak-blue-deep); }
+      .kds-choice__row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+      .kds-choice__tag { font-size:11px; letter-spacing:0.16em; text-transform:uppercase; font-weight:600; color:var(--muted); }
+      .kds-choice--primary .kds-choice__tag { color:rgba(255,255,255,.7); }
+      .kds-choice__icon { width:34px; height:34px; display:grid; place-items:center; border-radius:10px; background:var(--line-2); flex-shrink:0; }
+      .kds-choice--primary .kds-choice__icon { background:rgba(255,255,255,.16); color:#fff; }
+      .kds-choice__title { font-family:var(--font-display); font-size:24px; line-height:1.05; letter-spacing:-0.025em; font-weight:600; margin:0; }
+      .kds-choice--secondary .kds-choice__title { font-size:20px; }
+      .kds-choice__desc { font-size:13px; line-height:1.5; color:var(--muted); }
+      .kds-choice--primary .kds-choice__desc { color:rgba(255,255,255,.78); }
+      .kds-choice__cta { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:var(--kavak-blue); }
+      .kds-choice--primary .kds-choice__cta { color:#fff; }
+      .kds-choice__meta { display:flex; align-items:center; gap:12px; font-size:12px; color:rgba(255,255,255,.78); border-top:1px solid rgba(255,255,255,.18); padding-top:12px; margin-top:2px; }
+      .kds-dot { width:6px; height:6px; border-radius:999px; background:#6EE7A8; box-shadow:0 0 0 3px rgba(110,231,168,.25); display:inline-block; }
+      .kds-hero__media { position:relative; overflow:hidden; background:#0a0b14; }
+      .kds-hero__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+      .kds-hero__veil { position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,11,20,0) 50%,rgba(10,11,20,.55) 100%),linear-gradient(90deg,rgba(10,11,20,.2) 0%,rgba(10,11,20,0) 30%); }
+      .kds-plate { position:absolute; left:50%; bottom:8%; transform:translateX(-50%) rotate(-1.5deg); background:#0a0b14; color:#fff; font-family:var(--font-display); font-weight:800; letter-spacing:0.14em; font-size:20px; padding:10px 20px 9px; border-radius:6px; border:2px solid rgba(255,255,255,.85); }
+      .kds-media-caption { position:absolute; bottom:0; left:0; right:0; padding:28px; display:flex; justify-content:space-between; align-items:flex-end; }
+      .kds-media-caption__title { color:#fff; font-family:var(--font-display); font-size:22px; font-weight:600; margin:0 0 4px; letter-spacing:-0.02em; }
+      .kds-media-caption__sub { color:rgba(255,255,255,.55); font-size:13px; margin:0; }
+      .kds-ticker { position:absolute; top:24px; left:0; right:0; display:flex; justify-content:space-between; padding:0 28px; }
+      .kds-ticker span { font-size:12px; color:rgba(255,255,255,.6); letter-spacing:0.06em; text-transform:uppercase; display:flex; align-items:center; gap:8px; }
+      .kds-trust { border-top:1px solid var(--line); padding:20px 64px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); }
+      .kds-trust__group { display:flex; align-items:center; gap:28px; }
+      .kds-subscreen { flex:1; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); min-height:calc(100vh - 64px); }
+      .kds-subscreen__panel { padding:56px 64px; display:flex; flex-direction:column; gap:36px; max-width:580px; }
+      .kds-back-btn { display:inline-flex; align-items:center; gap:8px; font-size:14px; color:var(--muted); background:transparent; border:0; cursor:pointer; padding:0; }
+      .kds-back-btn:hover { color:var(--ink); }
+      .kds-subscreen__title { font-family:var(--font-display); font-weight:600; font-size:clamp(36px,3.8vw,60px); line-height:1; letter-spacing:-0.04em; margin:0; }
+      .kds-subscreen__sub { font-size:16px; line-height:1.5; color:var(--ink-3); max-width:460px; margin:0; }
+      .kds-segment { display:inline-flex; padding:4px; background:var(--line-2); border-radius:999px; }
+      .kds-segment__btn { appearance:none; border:0; background:transparent; padding:8px 16px; border-radius:999px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:background .2s,color .2s; }
+      .kds-segment__btn.is-active { background:var(--paper); color:var(--ink); box-shadow:0 1px 2px rgba(10,11,20,.06),0 4px 12px -6px rgba(10,11,20,.12); }
+      .kds-field { display:flex; flex-direction:column; gap:8px; }
+      .kds-field__label { font-size:13px; font-weight:500; color:var(--ink-3); display:flex; justify-content:space-between; align-items:baseline; }
+      .kds-field__label small { color:var(--muted-2); font-weight:400; }
+      .kds-input-wrap { position:relative; display:flex; align-items:center; border:1px solid var(--line); background:var(--paper); border-radius:var(--r-md); transition:border-color .2s,box-shadow .2s; overflow:hidden; }
+      .kds-input-wrap:focus-within { border-color:var(--kavak-blue); box-shadow:0 0 0 4px color-mix(in oklab,var(--kavak-blue) 14%,transparent); }
+      .kds-input-wrap.is-error { border-color:#E5484D; box-shadow:0 0 0 4px rgba(229,72,77,.12); }
+      .kds-input-wrap__icon { display:grid; place-items:center; padding-left:16px; color:var(--muted); }
+      .kds-input { flex:1; border:0; outline:0; background:transparent; padding:18px 16px; font-size:17px; color:var(--ink); letter-spacing:-0.005em; }
+      .kds-input--mono { font-family:var(--font-mono); letter-spacing:0.04em; }
+      .kds-input::placeholder { color:var(--muted-2); }
+      .kds-input-wrap__addon { padding:0 14px; font-size:11px; color:var(--muted-2); border-left:1px solid var(--line); align-self:stretch; display:grid; place-items:center; }
+      .kds-btn { appearance:none; border:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:14px 22px; border-radius:var(--r-md); font-size:15px; font-weight:500; transition:transform .15s,background .2s; }
+      .kds-btn:active { transform:translateY(1px); }
+      .kds-btn--primary { background:var(--kavak-blue); color:#fff; }
+      .kds-btn--primary:hover { background:var(--kavak-blue-deep); }
+      .kds-btn--primary:disabled { background:var(--line); color:var(--muted-2); cursor:not-allowed; }
+      .kds-btn--ghost { background:transparent; color:var(--ink-3); border:1px solid var(--line); }
+      .kds-btn--ghost:hover { border-color:var(--ink); color:var(--ink); }
+      .kds-btn--block { width:100%; }
+      .kds-form-row { display:flex; align-items:center; gap:12px; }
+      .kds-helper { display:flex; gap:12px; align-items:flex-start; padding:14px 16px; background:var(--kavak-blue-hint); border:1px solid var(--kavak-blue-edge); border-radius:var(--r-md); font-size:13px; line-height:1.5; color:var(--kavak-blue-ink); }
+      .kds-helper__icon { flex-shrink:0; margin-top:1px; color:var(--kavak-blue); }
+      .kds-status-strip { display:flex; align-items:center; gap:16px; padding-top:16px; font-size:13px; color:var(--muted); border-top:1px solid var(--line); }
+      .kds-preview { position:relative; background:#0A0B14; color:#fff; padding:56px; display:flex; flex-direction:column; gap:24px; overflow:hidden; }
+      .kds-preview::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 15% 0%,color-mix(in oklab,var(--kavak-blue) 35%,transparent),transparent 50%),radial-gradient(circle at 100% 100%,color-mix(in oklab,var(--kavak-blue) 28%,transparent),transparent 45%); pointer-events:none; }
+      .kds-preview > * { position:relative; z-index:1; }
+      .kds-preview__eyebrow { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,.55); }
+      .kds-preview__title { font-family:var(--font-display); font-weight:500; font-size:32px; line-height:1.08; letter-spacing:-0.03em; margin:0; max-width:400px; }
+      .kds-case-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:var(--r-lg); padding:22px; }
+      .kds-case-card__head { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:rgba(255,255,255,.55); letter-spacing:0.06em; text-transform:uppercase; }
+      .kds-timeline { list-style:none; margin:20px 0 0; padding:0; display:flex; flex-direction:column; gap:12px; }
+      .kds-timeline li { display:grid; grid-template-columns:22px 1fr auto; align-items:center; gap:12px; font-size:13px; }
+      .kds-ti-dot { width:10px; height:10px; border-radius:999px; border:2px solid rgba(255,255,255,.25); justify-self:center; }
+      .kds-timeline .is-done .kds-ti-dot { background:var(--kavak-blue); border-color:var(--kavak-blue); }
+      .kds-timeline .is-now .kds-ti-dot { background:#6EE7A8; border-color:#6EE7A8; box-shadow:0 0 0 4px rgba(110,231,168,.18); }
+      .kds-ti-time { font-size:12px; color:rgba(255,255,255,.45); }
+      .kds-sso { display:flex; gap:10px; }
+      .kds-sso__btn { flex:1; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:13px; border-radius:var(--r-md); border:1px solid var(--line); background:var(--paper); font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; }
+      .kds-sso__btn:hover { border-color:var(--ink); }
+      .kds-divider-or { display:flex; align-items:center; gap:12px; color:var(--muted-2); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; }
+      .kds-divider-or::before,.kds-divider-or::after { content:""; flex:1; height:1px; background:var(--line); }
+      .kds-shake { animation:kds-shake .35s; }
+      @keyframes kds-shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
+      .kds-fade-in { animation:kds-fadeIn .4s cubic-bezier(.2,.7,.2,1) both; }
+      @keyframes kds-fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+      @media(max-width:1100px){
+        .kds-hero{grid-template-columns:1fr}
+        .kds-hero__media{min-height:320px}
+        .kds-hero__copy{padding:40px 24px}
+        .kds-subscreen{grid-template-columns:1fr}
+        .kds-subscreen__panel{padding:40px 24px;max-width:100%}
+        .kds-preview{display:none}
+        .kds-topbar{padding:0 24px}
+        .kds-trust{padding:16px 24px}
+        .kds-choices{grid-template-columns:1fr}
+      }
+    `;
+    document.head.appendChild(s);
+  }, []);
+  return null;
+}
+
+// ── Icons ─────────────────────────────────────────────────────────
+const ArrowRight = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14M13 6l6 6-6 6"/>
+  </svg>
+);
+const ArrowLeft = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 12H5M11 6l-6 6 6 6"/>
+  </svg>
+);
+const IconUser = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+  </svg>
+);
+const IconWrench = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-2.1 2.6-2.4z"/>
+  </svg>
+);
+const IconSearch = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+  </svg>
+);
+const IconLock = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+  </svg>
+);
+const IconMail = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 7 9-7"/>
+  </svg>
+);
+const IconInfo = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9"/><path d="M12 8v.5M12 11v5"/>
+  </svg>
+);
+const IconShield = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3l8 3v6c0 5-3.6 8.4-8 9-4.4-.6-8-4-8-9V6l8-3z"/>
+  </svg>
+);
+const IconEye = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+const IconEyeOff = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7c1.6 0 3-.3 4.3-.8"/>
+  </svg>
+);
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -259,91 +483,81 @@ function Modal({ title, onClose, children }) {
 
 // ── Pantalla de inicio ────────────────────────────────────────────
 
+function TopBar({ onLogo }) {
+  return (
+    <header className="kds-topbar">
+      <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+        <a className="kds-brandmark" href="#" onClick={e => { e.preventDefault(); onLogo?.(); }}>KAVAK</a>
+        <span className="kds-brand-pill">Portal · Sigue tu caso</span>
+      </div>
+    </header>
+  );
+}
+
 function PantallaInicio({ onCliente, onInterno }) {
   return (
-    <div style={{ minHeight: "100vh", background: "#f8f9fa", display: "flex", flexDirection: "column" }}>
-      <div style={{
-        position: "relative", width: "100%", height: 300,
-        backgroundImage: "url('https://cdn.buttercms.com/QQFdpmdKRHS9NlKqG5oU')",
-        backgroundSize: "cover", backgroundPosition: "center 50%",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <div style={{
-          background: "#fff", borderRadius: 20, padding: "24px 40px",
-          textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-          display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 10,
-        }}>
-          <div style={{ background: KAVAK_BLUE, borderRadius: 12, padding: "10px 22px", display: "inline-block" }}>
-            <KavakLogo dark={false} />
+    <div style={{ display:"flex", flexDirection:"column", minHeight:"100vh", background:"var(--paper)", fontFamily:"var(--font-display)" }}>
+      <InjectStyles />
+      <TopBar />
+      <div className="kds-hero kds-fade-in">
+        <section className="kds-hero__copy">
+          <div>
+            <span className="kds-eyebrow">Portal de seguimiento</span>
+            <h1 className="kds-headline">Sigue tu<br />caso<span className="dot">.</span></h1>
+            <p className="kds-subhead">Consulta el estado de tu vehículo en tiempo real, o accede al panel interno de gestión post-venta.</p>
           </div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a1a", letterSpacing: -0.5 }}>
-            Sigue Tu Caso
-          </h1>
-          <p style={{ margin: 0, fontSize: 14, color: "#999" }}>
-            Selecciona cómo deseas ingresar
-          </p>
+          <div className="kds-choices">
+            <button className="kds-choice kds-choice--primary" onClick={onCliente}>
+              <div className="kds-choice__row">
+                <span className="kds-choice__tag">Para clientes</span>
+                <span className="kds-choice__icon"><IconUser /></span>
+              </div>
+              <div>
+                <h2 className="kds-choice__title">Soy cliente Kavak</h2>
+                <p className="kds-choice__desc">Consulta el estado de tu vehículo con tu número de caso o patente. Sin contraseña.</p>
+              </div>
+              <span className="kds-choice__cta">Consultar mi caso <ArrowRight /></span>
+              <div className="kds-choice__meta">
+                <span className="kds-dot" />
+                <span>Tiempo promedio de respuesta · 38 seg</span>
+              </div>
+            </button>
+            <button className="kds-choice kds-choice--secondary" onClick={onInterno}>
+              <div className="kds-choice__row">
+                <span className="kds-choice__tag">Equipo interno</span>
+                <span className="kds-choice__icon"><IconWrench /></span>
+              </div>
+              <div>
+                <h2 className="kds-choice__title">Internos de Kavak</h2>
+                <p className="kds-choice__desc">Acceso al panel de gestión para el equipo de post-venta.</p>
+              </div>
+              <span className="kds-choice__cta">Iniciar sesión <ArrowRight /></span>
+            </button>
+          </div>
+        </section>
+        <aside className="kds-hero__media">
+          <img className="kds-hero__img" alt="" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1600&q=80" />
+          <div className="kds-hero__veil" />
+          <div className="kds-ticker">
+            <span>Centro de servicio · Santiago</span>
+            <span><span className="kds-dot" style={{marginRight:6}} />En operación</span>
+          </div>
+          <div className="kds-plate">KAVAK</div>
+          <div className="kds-media-caption">
+            <div>
+              <p className="kds-media-caption__title">Cada caso, una historia.</p>
+              <p className="kds-media-caption__sub">Vehículos en proceso este mes</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <div className="kds-trust">
+        <div className="kds-trust__group">
+          <span><IconShield /> &nbsp;Datos cifrados extremo a extremo</span>
+          <span>+4 millones de clientes</span>
+          <span>Operación en 10 países</span>
         </div>
-      </div>
-
-      <div style={{
-        flex: 1, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: "36px 16px 48px",
-      }}>
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 560 }}>
-
-        <button onClick={onCliente} style={{
-          flex: "1 1 220px", background: "#fff", border: "1px solid #e8e8e8",
-          borderRadius: 16, padding: "28px 24px", cursor: "pointer", textAlign: "left",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-          transition: "box-shadow 0.15s, transform 0.15s",
-        }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "none"; }}
-        >
-          <div style={{
-            width: 44, height: 44, borderRadius: 12, background: KAVAK_BLUE_LIGHT,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 22, marginBottom: 14,
-          }}>👤</div>
-          <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>Cliente Kavak</p>
-          <p style={{ margin: 0, fontSize: 13, color: "#999", lineHeight: 1.4 }}>
-            Consulta el estado de tu vehículo con tu número de caso o patente
-          </p>
-          <div style={{
-            marginTop: 18, display: "inline-flex", alignItems: "center", gap: 6,
-            fontSize: 13, fontWeight: 600, color: KAVAK_BLUE,
-          }}>
-            Consultar estado →
-          </div>
-        </button>
-
-        <button onClick={onInterno} style={{
-          flex: "1 1 220px", background: KAVAK_BLUE, border: "none",
-          borderRadius: 16, padding: "28px 24px", cursor: "pointer", textAlign: "left",
-          boxShadow: `0 2px 12px ${KAVAK_BLUE}40`,
-          transition: "box-shadow 0.15s, transform 0.15s",
-        }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(83,74,183,0.4)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(83,74,183,0.25)"; e.currentTarget.style.transform = "none"; }}
-        >
-          <div style={{
-            width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.15)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 22, marginBottom: 14,
-          }}>🔧</div>
-          <p style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 700, color: "#fff" }}>Internos de Kavak</p>
-          <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.7)", lineHeight: 1.4 }}>
-            Acceso al panel de gestión para el equipo de post-venta
-          </p>
-          <div style={{
-            marginTop: 18, display: "inline-flex", alignItems: "center", gap: 6,
-            fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)",
-          }}>
-            Iniciar sesión →
-          </div>
-        </button>
-      </div>
+        <span>© Kavak {new Date().getFullYear()}</span>
       </div>
     </div>
   );
@@ -354,76 +568,91 @@ function PantallaInicio({ onCliente, onInterno }) {
 function LoginInterno({ onLogin, onVolver }) {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [err, setErr]           = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [shake, setShake]       = useState(false);
 
   function handleLogin() {
-    if (!email.trim()) { setErr("Ingresa tu correo"); return; }
-    if (!email.trim().toLowerCase().endsWith("@kavak.com")) { setErr("Solo se permiten correos @kavak.com"); return; }
-    if (password !== PANEL_PASSWORD) { setErr("Contraseña incorrecta"); return; }
-    onLogin(email.trim().toLowerCase());
+    if (!email.trim()) { triggerShake("Ingresa tu correo"); return; }
+    if (!email.trim().toLowerCase().endsWith("@kavak.com")) { triggerShake("Solo se permiten correos @kavak.com"); return; }
+    if (password !== PANEL_PASSWORD) { triggerShake("Contraseña incorrecta"); return; }
+    setSubmitting(true);
+    setTimeout(() => onLogin(email.trim().toLowerCase()), 300);
   }
 
-  const inputStyle = {
-    width: "100%", padding: "12px 14px", borderRadius: 10,
-    border: "1px solid #e0e0e0", background: "#fafafa",
-    color: "#1a1a1a", fontSize: 15, boxSizing: "border-box", outline: "none",
-  };
+  function triggerShake(msg) {
+    setErr(msg); setShake(true);
+    setTimeout(() => setShake(false), 400);
+  }
 
   return (
-    <div style={{
-      minHeight: "100vh", background: "#f8f9fa",
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      padding: "32px 16px",
-    }}>
-      <div style={{
-        width: "100%", maxWidth: 400, background: "#fff",
-        borderRadius: 18, padding: "36px 32px",
-        boxShadow: "0 4px 32px rgba(0,0,0,0.08)",
-      }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{
-            background: KAVAK_BLUE, borderRadius: 14, padding: "10px 24px",
-            display: "inline-block", margin: "0 auto 16px",
-          }}>
-            <KavakLogo dark={false} />
+    <div style={{ display:"flex", flexDirection:"column", minHeight:"100vh", background:"var(--paper)", fontFamily:"var(--font-display)" }}>
+      <InjectStyles />
+      <TopBar onLogo={onVolver} />
+      <div className="kds-subscreen kds-fade-in">
+        <section className="kds-subscreen__panel">
+          <button className="kds-back-btn" onClick={onVolver}><ArrowLeft /> Volver al inicio</button>
+          <div>
+            <span className="kds-eyebrow">Equipo interno</span>
+            <h1 className="kds-subscreen__title" style={{marginTop:12}}>Panel de<br />post-venta<span style={{color:"var(--kavak-blue)"}}>.</span></h1>
+            <p className="kds-subscreen__sub" style={{marginTop:16}}>Accede al panel de gestión para revisar casos, asignar tareas y actualizar el estado de los vehículos en proceso.</p>
           </div>
-          <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
-            Acceso internos
-          </h2>
-          <p style={{ margin: 0, fontSize: 13, color: "#999" }}>Solo equipo Post-Venta Kavak</p>
-        </div>
-
-        <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6 }}>Correo Kavak</label>
-        <input
-          style={inputStyle}
-          type="email"
-          placeholder="nombre@kavak.com"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleLogin()}
-        />
-        <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 6, marginTop: 14 }}>Contraseña</label>
-        <input
-          style={inputStyle}
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleLogin()}
-        />
-        {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "8px 0 0" }}>{err}</p>}
-        <button onClick={handleLogin} style={{
-          width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
-          background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
-          cursor: "pointer", fontSize: 15, marginTop: 12,
-        }}>
-          Ingresar
-        </button>
-
-        <button onClick={onVolver} style={{
-          width: "100%", marginTop: 14, background: "none", border: "none",
-          cursor: "pointer", fontSize: 13, color: "#ccc", textDecoration: "underline",
-        }}>← Volver al inicio</button>
+          <div style={{display:"flex", flexDirection:"column", gap:16}}>
+            <div className="kds-field">
+              <label className="kds-field__label"><span>Correo</span><small>@kavak.com</small></label>
+              <div className={`kds-input-wrap${shake ? " is-error kds-shake" : ""}`}>
+                <span className="kds-input-wrap__icon"><IconMail /></span>
+                <input className="kds-input" type="email" placeholder="nombre@kavak.com" value={email}
+                  onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} autoComplete="username" />
+              </div>
+            </div>
+            <div className="kds-field">
+              <label className="kds-field__label"><span>Contraseña</span></label>
+              <div className={`kds-input-wrap${shake ? " is-error" : ""}`}>
+                <span className="kds-input-wrap__icon"><IconLock /></span>
+                <input className="kds-input" type={showPass ? "text" : "password"} placeholder="••••••••" value={password}
+                  onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} autoComplete="current-password" />
+                <button type="button" onClick={() => setShowPass(s => !s)} style={{background:"transparent",border:0,padding:"0 16px",color:"var(--muted)",cursor:"pointer",display:"grid",placeItems:"center",height:"100%"}}>
+                  {showPass ? <IconEyeOff /> : <IconEye />}
+                </button>
+              </div>
+            </div>
+            {err && (
+              <div className="kds-helper" style={{background:"#FEECEC",borderColor:"#F8C9CA",color:"#9F1F23"}}>
+                <span className="kds-helper__icon" style={{color:"#E5484D"}}><IconInfo /></span>
+                <div>{err}</div>
+              </div>
+            )}
+            <button className="kds-btn kds-btn--primary kds-btn--block" onClick={handleLogin} disabled={submitting}>
+              {submitting ? "Validando…" : <><span>Iniciar sesión</span><ArrowRight /></>}
+            </button>
+            <div className="kds-status-strip">
+              <span className="kds-dot" /> Acceso limitado al equipo de post-venta · Auditado
+            </div>
+          </div>
+        </section>
+        <aside className="kds-preview">
+          <span className="kds-preview__eyebrow">Vista previa · Panel interno</span>
+          <h2 className="kds-preview__title">Operación de post-venta en un solo lugar.</h2>
+          <div className="kds-case-card">
+            <div className="kds-case-card__head"><span>Cola de hoy</span><span style={{color:"#6EE7A8"}}>● Activos</span></div>
+            <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:16}}>
+              {[
+                {id:"Caso #727885",car:"Espera de repuesto",color:"#FFD37A"},
+                {id:"Caso #729004",car:"Disponible para trabajo",color:"#9BB4FF"},
+                {id:"Caso #730457",car:"Listo para entregar",color:"#6EE7A8"},
+                {id:"Caso #728343",car:"En diagnóstico",color:"#E8E9EE"},
+              ].map(r => (
+                <div key={r.id} style={{display:"grid",gridTemplateColumns:"120px 1fr auto",alignItems:"center",gap:10,padding:"8px 0",borderTop:"1px solid rgba(255,255,255,.06)",fontSize:13}}>
+                  <span style={{fontFamily:"var(--font-mono)",color:"rgba(255,255,255,.6)",fontSize:12}}>{r.id}</span>
+                  <span>{r.car}</span>
+                  <span style={{fontSize:11,padding:"3px 8px",borderRadius:999,background:"rgba(255,255,255,.08)",color:r.color,fontWeight:500}}>●</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );
@@ -1147,6 +1376,8 @@ function PortalCliente({ onVolver, modoInterno = false }) {
   const [loading, setLoading]         = useState(false);
   const [err, setErr]                 = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
+  const [modoTab, setModoTab] = useState("caso");
+  const [shake, setShake] = useState(false);
 
   async function buscar() {
     const q = busqueda.trim();
@@ -1190,24 +1421,109 @@ function PortalCliente({ onVolver, modoInterno = false }) {
     return esPendiente && h.comentario && h.comentario.trim() !== "";
   })?.comentario || null;
 
+  function triggerShake() { setShake(true); setTimeout(() => setShake(false), 400); }
+
+  if (!modoInterno && !caso) {
+    return (
+      <div style={{display:"flex",flexDirection:"column",minHeight:"100vh",background:"var(--paper)",fontFamily:"var(--font-display)"}}>
+        <InjectStyles />
+        <TopBar onLogo={onVolver} />
+        <div className="kds-subscreen kds-fade-in">
+          <section className="kds-subscreen__panel">
+            <button className="kds-back-btn" onClick={onVolver}><ArrowLeft /> Volver al inicio</button>
+            <div>
+              <span className="kds-eyebrow">Cliente</span>
+              <h1 className="kds-subscreen__title" style={{marginTop:12}}>Consulta<br />tu caso<span style={{color:"var(--kavak-blue)"}}>.</span></h1>
+              <p className="kds-subscreen__sub" style={{marginTop:16}}>Ingresa los datos de tu caso para ver el estado actualizado de tu vehículo y próximos pasos.</p>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:20}}>
+              <div className="kds-segment">
+                <button className={`kds-segment__btn${modoTab==="caso"?" is-active":""}`} onClick={() => { setModoTab("caso"); setBusqueda(""); }}>
+                  <IconShield /> Número de caso
+                </button>
+                <button className={`kds-segment__btn${modoTab==="patente"?" is-active":""}`} onClick={() => { setModoTab("patente"); setBusqueda(""); }}>
+                  <IconSearch /> Patente
+                </button>
+              </div>
+              <div className="kds-field">
+                <label className="kds-field__label">
+                  <span>{modoTab === "caso" ? "Número de caso" : "Patente del vehículo"}</span>
+                  <small>{modoTab === "caso" ? "Lo encuentras en el correo de confirmación" : "Formato chileno sin guiones"}</small>
+                </label>
+                <div className={`kds-input-wrap${shake?" is-error kds-shake":""}`}>
+                  <span className="kds-input-wrap__icon"><IconSearch /></span>
+                  <input className="kds-input kds-input--mono"
+                    placeholder={modoTab === "caso" ? "Ej: 727885" : "Ej: LHHY81"}
+                    value={busqueda}
+                    onChange={e => setBusqueda(e.target.value.toUpperCase())}
+                    onKeyDown={e => e.key === "Enter" && (busqueda.trim() ? buscar() : triggerShake())}
+                    autoComplete="off" spellCheck={false}
+                  />
+                  <span className="kds-input-wrap__addon">{modoTab === "caso" ? "CASO ID" : "PATENTE"}</span>
+                </div>
+              </div>
+              {err && (
+                <div className="kds-helper" style={{background:"#FEECEC",borderColor:"#F8C9CA",color:"#9F1F23"}}>
+                  <span className="kds-helper__icon" style={{color:"#E5484D"}}><IconInfo /></span>
+                  <div>{err}</div>
+                </div>
+              )}
+              <div className="kds-form-row">
+                <button className="kds-btn kds-btn--primary" disabled={loading || !busqueda.trim()}
+                  onClick={() => busqueda.trim() ? buscar() : triggerShake()}>
+                  {loading ? "Consultando…" : <><span>Consultar estado</span><ArrowRight /></>}
+                </button>
+              </div>
+              <div className="kds-helper">
+                <span className="kds-helper__icon"><IconInfo /></span>
+                <div><strong>Tu información está protegida.</strong> No requerimos contraseña; validamos tu identidad con datos que solo tú y Kavak conocen.</div>
+              </div>
+              <div className="kds-status-strip">
+                <span className="kds-dot" /> Sistema operativo · Respuestas en menos de 1 min
+              </div>
+            </div>
+          </section>
+          <aside className="kds-preview">
+            <span className="kds-preview__eyebrow">Vista previa · Estado de un caso</span>
+            <h2 className="kds-preview__title">Así verás cada paso de tu vehículo.</h2>
+            <div className="kds-case-card">
+              <div className="kds-case-card__head"><span>Caso #727885</span><span>Inspección técnica</span></div>
+              <div style={{marginTop:14,fontSize:18,fontFamily:"var(--font-display)",letterSpacing:"-0.02em"}}>Chevrolet Sail 2021</div>
+              <span style={{display:"inline-block",background:"#fff",color:"#0A0B14",fontFamily:"var(--font-mono)",fontWeight:700,letterSpacing:"0.12em",padding:"3px 9px",borderRadius:4,fontSize:12,marginTop:6}}>LHHY81</span>
+              <ul className="kds-timeline">
+                {[
+                  {label:"Pendiente de diagnóstico",done:true,time:"07-05 10:29"},
+                  {label:"En diagnóstico",done:true,time:"07-05 11:06"},
+                  {label:"Espera de repuesto",now:true,time:"En curso"},
+                  {label:"Disponible para trabajo",time:"—"},
+                  {label:"Listo para entregar",time:"—"},
+                ].map((s,i) => (
+                  <li key={i} className={s.done?"is-done":s.now?"is-now":""}>
+                    <span className="kds-ti-dot"/>
+                    <span>{s.label}</span>
+                    <span className="kds-ti-time">{s.time}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: modoInterno ? "unset" : "100vh",
       background: modoInterno ? "transparent" : "#f8f9fa",
       display: "flex", flexDirection: "column", alignItems: "center",
       padding: modoInterno ? "0" : "40px 16px 48px",
+      fontFamily: "var(--font-display)",
     }}>
-      {!modoInterno && (
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ background: KAVAK_BLUE, borderRadius: 16, padding: "10px 24px", display: "inline-block", margin: "0 auto 12px" }}>
-            <KavakLogo dark={false} />
-          </div>
-          <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 700, color: "#1a1a1a" }}>Seguimiento de mi vehículo</h1>
-          <p style={{ margin: 0, fontSize: 14, color: "#888" }}>Ingresa tu número de caso o patente para ver el estado actual</p>
-        </div>
-      )}
+      {!modoInterno && <InjectStyles />}
+      {!modoInterno && <TopBar onLogo={() => { setCaso(null); setHistorico([]); }} />}
 
-      <div style={{ display: "flex", gap: 10, width: "100%", maxWidth: 480, marginBottom: 28 }}>
+      <div style={{ display: "flex", gap: 10, width: "100%", maxWidth: 480, marginBottom: 28, marginTop: modoInterno ? 0 : 24 }}>
         <input
           style={{ flex: 1, padding: "12px 16px", borderRadius: 12, border: "1px solid #e0e0e0", background: "#fff", color: "#1a1a1a", fontSize: 15, outline: "none" }}
           placeholder="Número de caso o patente"
