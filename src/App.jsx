@@ -141,23 +141,27 @@ function filtrarProcesoReciente(todos) {
   const validos = proceso.filter(f => f.fecha_ingreso || f.fecha_listo);
   const base = validos.length > 0 ? validos : proceso;
 
-  // Descartar ENTREGADO A CLIENTE sin fecha_listo:
-  // ese registro se crea al inicio del proceso pero solo es válido cuando tiene fecha_listo
-  const resultado = base.filter(f => {
-    if (f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE" && !f.fecha_listo) return false;
-    return true;
-  });
-  const final = resultado.length > 0 ? resultado : base;
-
-  // Ordenar cronológicamente por fecha_ingreso asc
-  return final.sort((a, b) => {
+  // Ordenar cronológicamente primero para saber cuál ENTREGADO es el más reciente
+  const ordenado = [...base].sort((a, b) => {
     if (!a.fecha_ingreso && !b.fecha_ingreso) return 0;
     if (!a.fecha_ingreso) return -1;
     if (!b.fecha_ingreso) return 1;
-    const da = new Date(`${a.fecha_ingreso}T${a.hora_ingreso || "00:00:00"}`);
-    const db = new Date(`${b.fecha_ingreso}T${b.hora_ingreso || "00:00:00"}`);
+    const da = new Date(a.fecha_ingreso + "T" + (a.hora_ingreso || "00:00:00"));
+    const db = new Date(b.fecha_ingreso + "T" + (b.hora_ingreso || "00:00:00"));
     return da - db;
   });
+  // El último registro cronológico
+  const ultimoRegistro = ordenado[ordenado.length - 1];
+  // Descartar ENTREGADO A CLIENTE sin fecha_listo SOLO si no es el último registro
+  // Si es el último, es la entrega real abierta y debe mantenerse
+  const final = ordenado.filter(f => {
+    const esEntregado = f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE";
+    if (esEntregado && !f.fecha_listo && f !== ultimoRegistro) return false;
+    return true;
+  });
+
+  // Ya está ordenado cronológicamente
+  return final;
 }
 
 async function getHistorialByNumero(numero) {
