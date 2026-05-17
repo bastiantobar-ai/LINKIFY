@@ -738,7 +738,9 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     if (!filas || filas.length === 0) return { filaInicio: null, filaFin: null };
     const abierta = filas.find(f => !f.fecha_listo);
     if (abierta) return { filaInicio: abierta, filaFin: null };
-    return { filaInicio: filas[0], filaFin: filas[filas.length - 1] };
+    // Siempre mostrar la aparición más reciente (última fila)
+    const ultima = filas[filas.length - 1];
+    return { filaInicio: ultima, filaFin: ultima };
   }
 
   const comentMap = {};
