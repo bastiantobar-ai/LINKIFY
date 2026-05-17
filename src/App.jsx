@@ -86,7 +86,7 @@ function InjectStyles() {
       .kds-choice__meta { display:flex; align-items:center; gap:12px; font-size:12px; color:rgba(255,255,255,.78); border-top:1px solid rgba(255,255,255,.18); padding-top:12px; margin-top:2px; }
       .kds-dot { width:6px; height:6px; border-radius:999px; background:#6EE7A8; box-shadow:0 0 0 3px rgba(110,231,168,.25); display:inline-block; }
       .kds-hero__media { position:relative; overflow:hidden; background:#0a0b14; }
-      .kds-hero__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+      .kds-hero__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 30%; }
       .kds-hero__veil { position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,11,20,0) 50%,rgba(10,11,20,.55) 100%),linear-gradient(90deg,rgba(10,11,20,.2) 0%,rgba(10,11,20,0) 30%); }
       .kds-plate { position:absolute; left:50%; bottom:8%; transform:translateX(-50%) rotate(-1.5deg); background:#0a0b14; color:#fff; font-family:var(--font-display); font-weight:800; letter-spacing:0.14em; font-size:20px; padding:10px 20px 9px; border-radius:6px; border:2px solid rgba(255,255,255,.85); }
       .kds-media-caption { position:absolute; bottom:0; left:0; right:0; padding:28px; display:flex; justify-content:space-between; align-items:flex-end; }
@@ -542,7 +542,6 @@ function PantallaInicio({ onCliente, onInterno }) {
             <span>Centro de servicio · Santiago</span>
             <span><span className="kds-dot" style={{marginRight:6}} />En operación</span>
           </div>
-          <div className="kds-plate">KAVAK</div>
           <div className="kds-media-caption">
             <div>
               <p className="kds-media-caption__title">Cada caso, una historia.</p>
