@@ -161,14 +161,14 @@ function filtrarProcesoReciente(todos) {
 }
 
 async function getHistorialByNumero(numero) {
-  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=id_sistema.asc,fecha_ingreso.asc,hora_ingreso.asc`);
+  const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=id_sistema.asc,fecha_ingreso.asc.nullslast,hora_ingreso.asc.nullslast`);
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
   return filtrarProcesoReciente(todos);
 }
 
 async function getHistorialByPatente(patente) {
-  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=id_sistema.asc,fecha_ingreso.asc,hora_ingreso.asc`);
+  const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=id_sistema.asc,fecha_ingreso.asc.nullslast,hora_ingreso.asc.nullslast`);
   if (!res.ok) throw new Error(await res.text());
   const todos = await res.json();
   return filtrarProcesoReciente(todos);
@@ -721,7 +721,7 @@ function ProgresoCliente({ historico, comentarios = [] }) {
   const nk = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
 
   // Por cada estado (normalizado) guardamos:
-  //   filas[k] = array de todas sus filas en orden cronológico
+  //   filas[k] = array de todas sus filas ordenadas cronológicamente asc
   const filasPorEstado = {};
   for (const fila of historico) {
     const k = nk(fila.estado_operativo?.toUpperCase().trim());
@@ -729,6 +729,7 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     if (!filasPorEstado[k]) filasPorEstado[k] = [];
     filasPorEstado[k].push(fila);
   }
+
 
   // Para un subestado dado, elige qué fila usar para inicio y fin:
   // - Si hay una fila sin fecha_listo (abierta): inicio = esa fila, fin = null
