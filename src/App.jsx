@@ -1480,24 +1480,67 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             <span className="kds-preview__eyebrow">Vista previa · Estado de un caso</span>
             <h2 className="kds-preview__title">Así verás cada paso de tu vehículo.</h2>
             <div className="kds-case-card">
-              <div className="kds-case-card__head"><span>Caso #727885</span><span>Inspección técnica</span></div>
-              <div style={{marginTop:14,fontSize:18,fontFamily:"var(--font-display)",letterSpacing:"-0.02em"}}>Chevrolet Sail 2021</div>
+              <div className="kds-case-card__head">
+                <span>Caso #727885</span>
+                <span style={{color:"#6EE7A8"}}>● En proceso</span>
+              </div>
+              <div style={{marginTop:12,fontSize:17,fontFamily:"var(--font-display)",letterSpacing:"-0.02em"}}>Chevrolet Sail 2021</div>
               <span style={{display:"inline-block",background:"#fff",color:"#0A0B14",fontFamily:"var(--font-mono)",fontWeight:700,letterSpacing:"0.12em",padding:"3px 9px",borderRadius:4,fontSize:12,marginTop:6}}>LHHY81</span>
-              <ul className="kds-timeline">
-                {[
+              <span style={{display:"inline-block",marginLeft:8,fontSize:12,color:"rgba(255,255,255,.5)"}}>📍 Kavak Schiappacasse</span>
+
+              {/* Grupos de estados */}
+              {[
+                { label:"Diagnóstico", num:1, completado:true, color:"#E24B4A", subestados:[
                   {label:"Pendiente de diagnóstico",done:true,time:"07-05 10:29"},
                   {label:"En diagnóstico",done:true,time:"07-05 11:06"},
-                  {label:"Espera de repuesto",now:true,time:"En curso"},
-                  {label:"Disponible para trabajo",time:"—"},
+                ]},
+                { label:"En Trabajo", num:2, activo:true, color:"#EF9F27", subestados:[
+                  {label:"Espera de repuesto",now:true,time:"15-05 10:34"},
+                  {label:"Disponible para trabajo",retro:true,time:"14-05 08:53"},
+                  {label:"Trabajando",retro:true,time:"14-05 12:27"},
+                  {label:"Prueba de ruta",time:"—"},
+                ]},
+                { label:"Listo", num:3, color:"#1D9E75", subestados:[
                   {label:"Listo para entregar",time:"—"},
-                ].map((s,i) => (
-                  <li key={i} className={s.done?"is-done":s.now?"is-now":""}>
-                    <span className="kds-ti-dot"/>
-                    <span>{s.label}</span>
-                    <span className="kds-ti-time">{s.time}</span>
-                  </li>
-                ))}
-              </ul>
+                  {label:"Entregado a cliente",time:"—"},
+                ]},
+              ].map((grupo, gi) => (
+                <div key={gi} style={{marginTop:16}}>
+                  {/* Header grupo */}
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingBottom:6,borderBottom:`1px solid rgba(255,255,255,.08)`}}>
+                    <div style={{width:18,height:18,borderRadius:"50%",background:grupo.completado||grupo.activo?grupo.color:"rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>
+                      {grupo.completado?"✓":grupo.num}
+                    </div>
+                    <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:grupo.completado||grupo.activo?"rgba(255,255,255,.9)":"rgba(255,255,255,.3)"}}>{grupo.label}</span>
+                    {grupo.completado && <span style={{marginLeft:"auto",fontSize:10,color:grupo.color,fontWeight:500}}>Completado ✓</span>}
+                  </div>
+                  {/* Subestados */}
+                  {grupo.subestados.map((s,si) => (
+                    <div key={si} style={{display:"flex",alignItems:"flex-start",gap:0,marginBottom:2}}>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:22,flexShrink:0}}>
+                        <div style={{
+                          width:9,height:9,borderRadius:"50%",marginTop:4,flexShrink:0,
+                          background:s.done?grupo.color:s.now?"#6EE7A8":s.retro?"rgba(255,255,255,.2)":"rgba(255,255,255,.1)",
+                          boxShadow:s.now?"0 0 0 3px rgba(110,231,168,.2)":"none",
+                          border:(!s.done&&!s.now&&!s.retro)?"1px solid rgba(255,255,255,.2)":"none",
+                        }}/>
+                        {si < grupo.subestados.length-1 && <div style={{width:1,height:12,background:"rgba(255,255,255,.1)",marginTop:2}}/>}
+                      </div>
+                      <div style={{flex:1,paddingLeft:8,paddingBottom:4}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <span style={{fontSize:12,color:s.done?"rgba(255,255,255,.6)":s.now?"#fff":s.retro?"rgba(255,255,255,.3)":"rgba(255,255,255,.25)",fontWeight:s.now?600:400,textDecoration:s.retro?"line-through":"none"}}>
+                            {s.label}
+                          </span>
+                          <span style={{fontSize:11,color:s.now?"#6EE7A8":"rgba(255,255,255,.3)",marginLeft:8,flexShrink:0}}>
+                            {s.now?"En curso":s.time}
+                          </span>
+                        </div>
+                        {s.retro && <span style={{fontSize:10,color:"rgba(255,255,255,.3)",fontStyle:"italic"}}>↩ Retrocedido</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
           </aside>
         </div>
