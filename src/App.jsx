@@ -536,7 +536,7 @@ function PantallaInicio({ onCliente, onInterno }) {
           </div>
         </section>
         <aside className="kds-hero__media">
-          <img className="kds-hero__img" alt="" src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1600&q=80" />
+          <img className="kds-hero__img" alt="" src="https://images.prd.kavak.io/assets/images/home-ui/cl-home-banner-md.webp" />
           <div className="kds-hero__veil" />
           <div className="kds-ticker">
             <span>Centro de servicio · Santiago</span>
@@ -1071,137 +1071,131 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     { key: "Listo",       label: "Listo",       subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Listo")       },
   ];
 
+  // Colores de dot por grupo
+  const DC = {
+    Diagnostico: "#E24B4A",
+    EnTrabajo:   "#EF9F27",
+    Listo:       "#1D9E75",
+  };
+
   return (
-    <div style={{ margin: "16px 0" }}>
+    <div style={{ margin: "8px 0" }}>
       {grupos.map((grupo, gi) => {
         const cfg = ESTADOS[grupo.key];
+        const dotColor = DC[grupo.key];
         const grupoActivo   = grupo.subestados.some(s => getOrden(s.key) <= ordenActual);
         const grupoCompleto = grupo.subestados.every(s => getOrden(s.key) < ordenActual);
 
         return (
-          <div key={grupo.key} style={{ marginBottom: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <div key={grupo.key} style={{ marginBottom: 20 }}>
+            {/* Grupo header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${grupoActivo ? cfg.border : "#f0f0f0"}` }}>
               <div style={{
-                width: 28, height: 28, borderRadius: "50%",
+                width: 22, height: 22, borderRadius: "50%",
                 background: grupoActivo ? cfg.color : "#f0f0f0",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 700, color: grupoActivo ? "#fff" : "#ccc", flexShrink: 0,
+                fontSize: 10, fontWeight: 700, color: grupoActivo ? "#fff" : "#ccc", flexShrink: 0,
               }}>
                 {grupoCompleto ? "✓" : gi + 1}
               </div>
-              <span style={{ fontWeight: 600, fontSize: 14, color: grupoActivo ? cfg.text : "#ccc" }}>{grupo.label}</span>
+              <span style={{ fontWeight: 700, fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: grupoActivo ? cfg.text : "#ccc" }}>{grupo.label}</span>
               {grupoCompleto && (
-                <span style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "1px 8px", fontSize: 11, fontWeight: 500 }}>
+                <span style={{ marginLeft: "auto", background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "1px 10px", fontSize: 11, fontWeight: 500 }}>
                   Completado ✓
                 </span>
               )}
             </div>
-            <div style={{ marginLeft: 38, display: "flex", flexDirection: "column", gap: 5 }}>
-              {grupo.subestados.map(s => {
+
+            {/* Subestados timeline */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {grupo.subestados.map((s, si) => {
                 const ordenS     = getOrden(s.key);
                 const completado = ordenS < ordenActual;
                 const activo     = ordenS === ordenActual;
-                const key = nk(s.key);
+                const key        = nk(s.key);
                 const existeEnHist = !!filasPorEstado[key];
                 const tieneAbierta = existeEnHist && filasPorEstado[key].some(f => !f.fecha_listo);
-                // Retrocedido: existió, no es actual ni completado, y TODAS sus filas están cerradas
-                const retroced  = !completado && !activo && existeEnHist && !tieneAbierta;
-                const tieneInfo = completado || activo || retroced;
+                const retroced   = !completado && !activo && existeEnHist && !tieneAbierta;
+                const tieneInfo  = completado || activo || retroced;
                 const { filaInicio, filaFin } = getFechas(key);
-                const inicioStr = filaInicio ? formatFechaHora(filaInicio.fecha_ingreso, filaInicio.hora_ingreso) : null;
-                const listoStr  = filaFin    ? formatFechaHora(filaFin.fecha_listo,      filaFin.hora_listo)      : null;
+                const inicioStr  = filaInicio ? formatFechaHora(filaInicio.fecha_ingreso, filaInicio.hora_ingreso) : null;
+                const listoStr   = filaFin    ? formatFechaHora(filaFin.fecha_listo, filaFin.hora_listo) : null;
+                const isLast     = si === grupo.subestados.length - 1;
 
                 return (
-                  <div key={s.key} style={{
-                    display: "flex", flexDirection: "column",
-                    padding: "7px 12px", borderRadius: 8,
-                    background: activo ? cfg.bg : completado ? "#f8f8f8" : "#fafafa",
-                    border: activo ? `1px solid ${cfg.border}` : "1px solid #f0f0f0",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div key={s.key} style={{ display: "flex", gap: 0 }}>
+                    {/* Dot + línea */}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 28, flexShrink: 0 }}>
                       <div style={{
-                        width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                        background: completado ? cfg.color : activo ? cfg.color : "#ebebeb",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 11, color: completado || activo ? "#fff" : "#ccc", fontWeight: 700,
-                      }}>
-                        {completado ? "✓" : activo ? "●" : ""}
-                      </div>
-                      <span style={{
-                        fontSize: 13, fontWeight: activo ? 600 : 400,
-                        color: completado ? "#aaa" : activo ? cfg.text : "#ccc",
-                        flex: 1,
-                      }}>{s.label}</span>
-                      {completado && (
-                        <span style={{
-                          background: cfg.bg, color: cfg.text,
-                          border: `1px solid ${cfg.border}`,
-                          borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500,
-                        }}>Completado ✓</span>
-                      )}
-                      {activo && (
-                        <span style={{
-                          background: cfg.color, color: "#fff",
-                          borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500,
-                        }}>Estado actual</span>
+                        width: 12, height: 12, borderRadius: "50%", marginTop: 13, flexShrink: 0,
+                        background: completado ? dotColor : activo ? "#6EE7A8" : "#e8e8e8",
+                        border: activo ? "none" : completado ? "none" : "2px solid #d0d0d0",
+                        boxShadow: activo ? `0 0 0 4px rgba(110,231,168,.2)` : "none",
+                      }} />
+                      {!isLast && (
+                        <div style={{ width: 2, flex: 1, minHeight: 14, background: completado ? dotColor + "60" : "#e8e8e8", marginTop: 3 }} />
                       )}
                     </div>
-                    {(tieneInfo || retroced) && (inicioStr || listoStr) && (
-                      <div style={{ marginTop: 8, marginLeft: 30, display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        {inicioStr && (
-                          <span style={{
-                            fontSize: 11,
-                            color: retroced ? "#bbb" : cfg.text,
-                            background: "#fff",
-                            border: `1px solid ${retroced ? "#e0e0e0" : cfg.border}`,
-                            borderRadius: 6, padding: "2px 8px",
-                            textDecoration: retroced ? "line-through" : "none",
-                          }}>
-                            📅 Inicio: {inicioStr}
+
+                    {/* Contenido */}
+                    <div style={{ flex: 1, paddingBottom: isLast ? 4 : 12, paddingLeft: 10, paddingTop: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span style={{
+                          fontSize: 14, fontWeight: activo ? 600 : completado ? 500 : 400,
+                          color: activo ? "#1a1a1a" : completado ? "#555" : "#bbb",
+                          flex: 1,
+                        }}>{s.label}</span>
+                        {activo && (
+                          <span style={{ background: cfg.color, color: "#fff", borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600 }}>
+                            Estado actual
                           </span>
                         )}
-                        {listoStr && (
-                          <span style={{
-                            fontSize: 11,
-                            color: retroced ? "#bbb" : cfg.text,
-                            background: "#fff",
-                            border: `1px solid ${retroced ? "#e0e0e0" : cfg.border}`,
-                            borderRadius: 6, padding: "2px 8px",
-                            textDecoration: retroced ? "line-through" : "none",
-                          }}>
-                            ✅ Fin: {listoStr}
+                        {completado && (
+                          <span style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 500 }}>
+                            Completado ✓
                           </span>
                         )}
                         {retroced && (
-                          <span style={{ fontSize: 11, color: "#bbb", fontStyle: "italic" }}>
+                          <span style={{ background: "#f5f5f5", color: "#999", border: "1px solid #e8e8e8", borderRadius: 20, padding: "2px 10px", fontSize: 11 }}>
                             ↩ Retrocedido
                           </span>
                         )}
                       </div>
-                    )}
-                    {tieneInfo && comentMap[s.key] && comentMap[s.key].length > 0 && (
-                      <div style={{ marginTop: 8, marginLeft: 30, display: "flex", flexDirection: "column", gap: 6 }}>
-                        {comentMap[s.key].map(c => (
-                          <div key={c.id} style={{
-                            background: "#fff", border: `1px solid ${cfg.border}`,
-                            borderLeft: `3px solid ${cfg.color}`,
-                            borderRadius: "0 8px 8px 0", padding: "8px 12px",
-                          }}>
-                            <p style={{ margin: "0 0 3px", fontSize: 13, color: "#333" }}>💬 {c.comentario}</p>
-                            <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>
-                              {c.creado_por} · {formatDate(c.created_at)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+
+                      {tieneInfo && (inicioStr || listoStr) && (
+                        <div style={{ display: "flex", gap: 12, marginTop: 4, flexWrap: "wrap" }}>
+                          {inicioStr && (
+                            <span style={{ fontSize: 12, color: retroced ? "#ccc" : "#888", textDecoration: retroced ? "line-through" : "none" }}>
+                              {inicioStr}
+                            </span>
+                          )}
+                          {listoStr && inicioStr !== listoStr && (
+                            <span style={{ fontSize: 12, color: retroced ? "#ccc" : "#aaa", textDecoration: retroced ? "line-through" : "none" }}>
+                              → {listoStr}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {tieneInfo && comentMap[s.key] && comentMap[s.key].length > 0 && (
+                        <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                          {comentMap[s.key].map(c => (
+                            <div key={c.id} style={{
+                              background: "#fafafa", border: `1px solid ${cfg.border}`,
+                              borderLeft: `3px solid ${cfg.color}`,
+                              borderRadius: "0 8px 8px 0", padding: "8px 12px",
+                            }}>
+                              <p style={{ margin: "0 0 3px", fontSize: 13, color: "#333" }}>💬 {c.comentario}</p>
+                              <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{c.creado_por} · {formatDate(c.created_at)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}
             </div>
-            {gi < grupos.length - 1 && (
-              <div style={{ marginLeft: 13, width: 2, height: 10, background: grupoCompleto ? cfg.color : "#e8e8e8", marginTop: 4 }} />
-            )}
           </div>
         );
       })}
