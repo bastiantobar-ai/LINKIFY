@@ -737,9 +737,10 @@ function ProgresoCliente({ historico, comentarios = [] }) {
   function getFechas(k) {
     const filas = filasPorEstado[k];
     if (!filas || filas.length === 0) return { filaInicio: null, filaFin: null };
-    const abierta = filas.find(f => !f.fecha_listo);
-    if (abierta) return { filaInicio: abierta, filaFin: null };
-    // Siempre mostrar la aparición más reciente (última fila)
+    // Buscar filas abiertas (sin fecha_listo) — tomar la MÁS RECIENTE (última)
+    const abiertas = filas.filter(f => !f.fecha_listo);
+    if (abiertas.length > 0) return { filaInicio: abiertas[abiertas.length - 1], filaFin: null };
+    // Todas cerradas → tomar la más reciente
     const ultima = filas[filas.length - 1];
     return { filaInicio: ultima, filaFin: ultima };
   }
