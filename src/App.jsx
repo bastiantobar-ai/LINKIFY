@@ -509,11 +509,15 @@ function ModalHistorial({ caso, comentariosDeCaso, onClose }) {
               const cfg = ESTADOS[principal] || {};
               return (
                 <div key={c.id} style={{
-                  borderLeft: `3px solid ${cfg.color || "#888"}`,
-                  background: "#f8f7f4", borderRadius: "0 8px 8px 0", padding: "10px 14px",
+                  borderLeft: `3px solid ${c.es_general ? KAVAK_BLUE : (cfg.color || "#888")}`,
+                  background: c.es_general ? KAVAK_BLUE_LIGHT : "#f8f7f4",
+                  borderRadius: "0 8px 8px 0", padding: "10px 14px",
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                    <SubBadge subestado={subestado} principal={principal} />
+                    {c.es_general
+                      ? <span style={{ background: KAVAK_BLUE_LIGHT, color: KAVAK_BLUE, border: `1px solid ${KAVAK_BLUE}30`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 500 }}>📝 Nota general</span>
+                      : <SubBadge subestado={subestado} principal={principal} />
+                    }
                     <span style={{ fontSize: 11, color: "#aaa" }}>{formatDate(c.created_at)}</span>
                   </div>
                   <p style={{ margin: "4px 0 2px", fontSize: 14 }}>{c.comentario}</p>
@@ -534,7 +538,7 @@ function ModalHistorial({ caso, comentariosDeCaso, onClose }) {
 
 // ── Tarjeta de caso ───────────────────────────────────────────────
 
-function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial, alerta, colorBorde }) {
+function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral, onVerHistorial, alerta, colorBorde }) {
   const { principal, subestado } = getMapped(caso.estado_operativo);
   const cfg = ESTADOS[principal] || {};
   const ultimoComentario = comentariosDeCaso[0];
@@ -591,6 +595,10 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial
             padding: "6px 12px", borderRadius: 7, border: "none",
             background: KAVAK_BLUE, color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 500,
           }}>+ Comentario</button>
+          <button onClick={() => onNotaGeneral(caso)} style={{
+            padding: "6px 12px", borderRadius: 7, border: "none",
+            background: "#f0f0f0", color: "#555", cursor: "pointer", fontSize: 12, fontWeight: 500,
+          }}>📝 Nota general</button>
           {comentariosDeCaso.length > 0 && (
             <button onClick={() => onVerHistorial(caso)} style={{
               padding: "6px 12px", borderRadius: 7, border: "1px solid #e0e0e0",
@@ -603,9 +611,79 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onVerHistorial
   );
 }
 
+// ── Modal Nota General ───────────────────────────────────────────
+
+function ModalNotaGeneral({ caso, onSave, onClose, defaultUser = "" }) {
+  const [nota, setNota]         = useState("");
+  const [creadoPor, setCreadoPor] = useState(defaultUser);
+  const [saving, setSaving]     = useState(false);
+  const [err, setErr]           = useState("");
+
+  async function handleSave() {
+    if (!nota.trim()) { setErr("La nota no puede estar vacía"); return; }
+    setSaving(true); setErr("");
+    try {
+      await addComentario({
+        numero_caso: caso.numero_caso,
+        patente: caso.patente,
+        estado: null,
+        comentario: nota.trim(),
+        creado_por: creadoPor.trim() || "Sin nombre",
+        es_general: true,
+        created_at: new Date().toISOString(),
+      });
+      onSave();
+      onClose();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputStyle = {
+    width: "100%", padding: "9px 12px", borderRadius: 8,
+    border: "1px solid #e0e0e0", background: "#fafafa",
+    color: "#1a1a1a", fontSize: 14, boxSizing: "border-box",
+  };
+
+  return (
+    <div>
+      <div style={{ background: "#f8f7f4", borderRadius: 10, padding: "12px 14px", marginBottom: 16 }}>
+        <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
+          Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong>
+        </p>
+        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#aaa" }}>
+          Esta nota es visible para el cliente en "Última actualización del equipo"
+        </p>
+      </div>
+      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>Tu nombre</label>
+      <input style={inputStyle} value={creadoPor} onChange={e => setCreadoPor(e.target.value)} placeholder="Ej: Juan Pérez" />
+      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4, marginTop: 12 }}>Nota general *</label>
+      <textarea
+        style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+        value={nota}
+        onChange={e => setNota(e.target.value)}
+        placeholder="Ej: El cliente fue contactado, esperando confirmación de retiro..."
+      />
+      {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 6 }}>{err}</p>}
+      <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+        <button onClick={handleSave} disabled={saving} style={{
+          flex: 1, padding: "10px 0", borderRadius: 8, border: "none",
+          background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14,
+        }}>{saving ? "Guardando..." : "Guardar nota"}</button>
+        <button onClick={onClose} style={{
+          flex: 1, padding: "10px 0", borderRadius: 8,
+          border: "1px solid #e0e0e0", background: "transparent", color: "#555", cursor: "pointer", fontSize: 14,
+        }}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Tab Pendientes ────────────────────────────────────────────────
 
-function TabPendientes({ casos, comentariosMap, onAgregarComentario, onVerHistorial, onRefresh }) {
+function TabPendientes({ casos, comentariosMap, onAgregarComentario, onNotaGeneral, onVerHistorial, onRefresh }) {
   const pendientes = casos.filter(c => {
     if (c.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE") return false;
     const comentariosDeCaso = comentariosMap[c.numero_caso] || [];
@@ -638,7 +716,7 @@ function TabPendientes({ casos, comentariosMap, onAgregarComentario, onVerHistor
               const alerta = haceHoras(ultimo?.created_at) >= 72 ? "advertencia" : "urgente";
               return (
                 <CasoCard key={c.id_sistema} caso={c} comentariosDeCaso={comentariosDeCaso}
-                  onAgregarComentario={onAgregarComentario} onVerHistorial={onVerHistorial}
+                  onAgregarComentario={onAgregarComentario} onNotaGeneral={onNotaGeneral} onVerHistorial={onVerHistorial}
                   alerta={alerta} colorBorde={false} />
               );
             })}
@@ -650,7 +728,7 @@ function TabPendientes({ casos, comentariosMap, onAgregarComentario, onVerHistor
 
 // ── Tab Backlog ───────────────────────────────────────────────────
 
-function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial, onRefresh }) {
+function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral, onVerHistorial, onRefresh }) {
   const [filtro, setFiltro] = useState("Todos");
   const [busquedaCaso, setBusquedaCaso] = useState("");
   const [busquedaPatente, setBusquedaPatente] = useState("");
@@ -706,7 +784,7 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onVerHistorial
             {backlog.map(c => (
               <CasoCard key={c.id_sistema} caso={c}
                 comentariosDeCaso={comentariosMap[c.numero_caso] || []}
-                onAgregarComentario={onAgregarComentario} onVerHistorial={onVerHistorial}
+                onAgregarComentario={onAgregarComentario} onNotaGeneral={onNotaGeneral} onVerHistorial={onVerHistorial}
                 alerta={null} colorBorde={true} />
             ))}
           </div>
@@ -1193,13 +1271,16 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             <ProgresoCliente historico={historico} comentarios={comentarios} />
           </div>
 
-          {comentarios.length > 0 && (
-            <div style={{ background: KAVAK_BLUE_LIGHT, border: `1px solid ${KAVAK_BLUE}20`, borderRadius: 10, padding: "12px 14px", marginTop: 8 }}>
-              <p style={{ margin: "0 0 6px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>💬 Última actualización del equipo</p>
-              <p style={{ margin: "0 0 4px", fontSize: 14, color: "#333" }}>{comentarios[0].comentario}</p>
-              <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{formatDate(comentarios[0].created_at)}</p>
-            </div>
-          )}
+          {(() => {
+            const notaGeneral = comentarios.find(c => c.es_general === true);
+            return notaGeneral ? (
+              <div style={{ background: KAVAK_BLUE_LIGHT, border: `1px solid ${KAVAK_BLUE}20`, borderRadius: 10, padding: "12px 14px", marginTop: 8 }}>
+                <p style={{ margin: "0 0 6px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>💬 Última actualización del equipo</p>
+                <p style={{ margin: "0 0 4px", fontSize: 14, color: "#333" }}>{notaGeneral.comentario}</p>
+                <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{formatDate(notaGeneral.created_at)}</p>
+              </div>
+            ) : null;
+          })()}
         </div>
       )}
 
@@ -1269,6 +1350,7 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
   const [loading, setLoading]           = useState(true);
   const [errConn, setErrConn]           = useState("");
   const [modalComentario, setModalComentario] = useState(null);
+  const [modalNotaGeneral, setModalNotaGeneral] = useState(null);
   const [modalHistorial, setModalHistorial]   = useState(null);
 
   const load = useCallback(async () => {
@@ -1362,12 +1444,14 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
         {tab === "backlog" && (
           <TabBacklog casos={casos} comentariosMap={comentariosMap}
             onAgregarComentario={c => setModalComentario(c)}
+            onNotaGeneral={c => setModalNotaGeneral(c)}
             onVerHistorial={c => setModalHistorial(c)}
             onRefresh={load} />
         )}
         {tab === "pendientes" && (
           <TabPendientes casos={casos} comentariosMap={comentariosMap}
             onAgregarComentario={c => setModalComentario(c)}
+            onNotaGeneral={c => setModalNotaGeneral(c)}
             onVerHistorial={c => setModalHistorial(c)}
             onRefresh={load} />
         )}
@@ -1385,6 +1469,11 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
       {modalComentario && (
         <Modal title="Agregar comentario" onClose={() => setModalComentario(null)}>
           <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} defaultUser={userEmail} />
+        </Modal>
+      )}
+      {modalNotaGeneral && (
+        <Modal title="📝 Nota general" onClose={() => setModalNotaGeneral(null)}>
+          <ModalNotaGeneral caso={modalNotaGeneral} onSave={load} onClose={() => setModalNotaGeneral(null)} defaultUser={userEmail} />
         </Modal>
       )}
       {modalHistorial && (
