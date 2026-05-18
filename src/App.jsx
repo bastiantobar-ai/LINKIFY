@@ -1484,11 +1484,11 @@ function PortalCliente({ onVolver, modoInterno = false }) {
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
                 <div>
                   <p style={{margin:0,fontSize:11,color:"#bbb",textTransform:"uppercase",letterSpacing:0.8}}>Número de caso</p>
-                  <p style={{margin:"2px 0 0",fontSize:24,fontWeight:700}}>#730905</p>
+                  <p style={{margin:"2px 0 0",fontSize:24,fontWeight:700}}>#000001</p>
                 </div>
                 <span style={{background:"#FAEEDA",color:"#633806",border:"1px solid #EF9F2730",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:500}}>Trabajando</span>
               </div>
-              <p style={{margin:"4px 0 0",fontSize:15,color:"#555",fontWeight:500}}>🚗 GKRW79</p>
+              <p style={{margin:"4px 0 0",fontSize:15,color:"#555",fontWeight:500}}>🚗 KAVA44</p>
               <p style={{margin:"3px 0 0",fontSize:13,color:"#bbb"}}>📍 Kavak Schiappacasse</p>
 
               {/* Solicitud inicial */}
