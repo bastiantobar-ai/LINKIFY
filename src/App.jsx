@@ -1394,9 +1394,9 @@ function PortalCliente({ onVolver, modoInterno = false }) {
         if (!modoInterno) {
           const tipo = /^\d+$/.test(q) ? 'numero_caso' : 'patente';
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
-          // Mostrar feedback si el vehículo llegó a LISTO para entregar
-          const esListo = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "LISTO");
-          if (esListo) setTimeout(() => setShowFeedback(true), 6000);
+          // Mostrar feedback solo si el estado ACTUAL es LISTO (no si solo pasó por ahí antes)
+          const estadoActual = hist[hist.length - 1]?.estado_operativo?.toUpperCase().trim();
+          if (estadoActual === "LISTO") setTimeout(() => setShowFeedback(true), 6000);
         }
       }
     } catch (e) {
