@@ -1483,71 +1483,90 @@ function PortalCliente({ onVolver, modoInterno = false }) {
               </div>
             </div>
           </section>
-          <aside className="kds-preview">
-            <span className="kds-preview__eyebrow">Vista previa · Estado de un caso</span>
-            <h2 className="kds-preview__title">Así verás cada paso de tu vehículo.</h2>
-            <div className="kds-case-card">
-              <div className="kds-case-card__head">
-                <span>Caso #727885</span>
-                <span style={{color:"#6EE7A8"}}>● En proceso</span>
-              </div>
-              <div style={{marginTop:12,fontSize:17,fontFamily:"var(--font-display)",letterSpacing:"-0.02em"}}>Chevrolet Sail 2021</div>
-              <span style={{display:"inline-block",background:"#fff",color:"#0A0B14",fontFamily:"var(--font-mono)",fontWeight:700,letterSpacing:"0.12em",padding:"3px 9px",borderRadius:4,fontSize:12,marginTop:6}}>LHHY81</span>
-              <span style={{display:"inline-block",marginLeft:8,fontSize:12,color:"rgba(255,255,255,.5)"}}>📍 Kavak Schiappacasse</span>
+          <aside style={{
+            background:"#f8f9fa", display:"flex", flexDirection:"column",
+            padding:"48px 40px", overflowY:"auto",
+          }}>
+            <p style={{margin:"0 0 24px",fontSize:11,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase",color:"#aaa"}}>Vista previa · Portal cliente</p>
 
-              {/* Grupos de estados */}
-              {[
-                { label:"Diagnóstico", num:1, completado:true, color:"#E24B4A", subestados:[
-                  {label:"Pendiente de diagnóstico",done:true,time:"07-05 10:29"},
-                  {label:"En diagnóstico",done:true,time:"07-05 11:06"},
-                ]},
-                { label:"En Trabajo", num:2, activo:true, color:"#EF9F27", subestados:[
-                  {label:"Espera de repuesto",now:true,time:"15-05 10:34"},
-                  {label:"Disponible para trabajo",retro:true,time:"14-05 08:53"},
-                  {label:"Trabajando",retro:true,time:"14-05 12:27"},
-                  {label:"Prueba de ruta",time:"—"},
-                ]},
-                { label:"Listo", num:3, color:"#1D9E75", subestados:[
-                  {label:"Listo para entregar",time:"—"},
-                  {label:"Entregado a cliente",time:"—"},
-                ]},
-              ].map((grupo, gi) => (
-                <div key={gi} style={{marginTop:16}}>
-                  {/* Header grupo */}
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,paddingBottom:6,borderBottom:`1px solid rgba(255,255,255,.08)`}}>
-                    <div style={{width:18,height:18,borderRadius:"50%",background:grupo.completado||grupo.activo?grupo.color:"rgba(255,255,255,.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>
-                      {grupo.completado?"✓":grupo.num}
-                    </div>
-                    <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:grupo.completado||grupo.activo?"rgba(255,255,255,.9)":"rgba(255,255,255,.3)"}}>{grupo.label}</span>
-                    {grupo.completado && <span style={{marginLeft:"auto",fontSize:10,color:grupo.color,fontWeight:500}}>Completado ✓</span>}
-                  </div>
-                  {/* Subestados */}
-                  {grupo.subestados.map((s,si) => (
-                    <div key={si} style={{display:"flex",alignItems:"flex-start",gap:0,marginBottom:2}}>
-                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:22,flexShrink:0}}>
-                        <div style={{
-                          width:9,height:9,borderRadius:"50%",marginTop:4,flexShrink:0,
-                          background:s.done?grupo.color:s.now?"#6EE7A8":s.retro?"rgba(255,255,255,.2)":"rgba(255,255,255,.1)",
-                          boxShadow:s.now?"0 0 0 3px rgba(110,231,168,.2)":"none",
-                          border:(!s.done&&!s.now&&!s.retro)?"1px solid rgba(255,255,255,.2)":"none",
-                        }}/>
-                        {si < grupo.subestados.length-1 && <div style={{width:1,height:12,background:"rgba(255,255,255,.1)",marginTop:2}}/>}
-                      </div>
-                      <div style={{flex:1,paddingLeft:8,paddingBottom:4}}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                          <span style={{fontSize:12,color:s.done?"rgba(255,255,255,.6)":s.now?"#fff":s.retro?"rgba(255,255,255,.3)":"rgba(255,255,255,.25)",fontWeight:s.now?600:400,textDecoration:s.retro?"line-through":"none"}}>
-                            {s.label}
-                          </span>
-                          <span style={{fontSize:11,color:s.now?"#6EE7A8":"rgba(255,255,255,.3)",marginLeft:8,flexShrink:0}}>
-                            {s.now?"En curso":s.time}
-                          </span>
-                        </div>
-                        {s.retro && <span style={{fontSize:10,color:"rgba(255,255,255,.3)",fontStyle:"italic"}}>↩ Retrocedido</span>}
-                      </div>
-                    </div>
-                  ))}
+            {/* Card caso — replica exacta del portal cliente */}
+            <div style={{
+              background:"#fff", borderRadius:16, border:"1px solid #ececec",
+              borderTop:"4px solid #EF9F27",
+              boxShadow:"0 4px 24px rgba(0,0,0,0.07)", padding:"24px", maxWidth:440,
+            }}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
+                <div>
+                  <p style={{margin:0,fontSize:11,color:"#bbb",textTransform:"uppercase",letterSpacing:0.8}}>Número de caso</p>
+                  <p style={{margin:"2px 0 0",fontSize:24,fontWeight:700}}>#730905</p>
                 </div>
-              ))}
+                <span style={{background:"#FAEEDA",color:"#633806",border:"1px solid #EF9F2730",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:500}}>Trabajando</span>
+              </div>
+              <p style={{margin:"4px 0 0",fontSize:15,color:"#555",fontWeight:500}}>🚗 GKRW79</p>
+              <p style={{margin:"3px 0 0",fontSize:13,color:"#bbb"}}>📍 Kavak Schiappacasse</p>
+
+              {/* Solicitud inicial */}
+              <div style={{background:"#E5F0FF",border:"1px solid #0066FF20",borderLeft:"4px solid #0066FF",borderRadius:"0 10px 10px 0",padding:"12px 14px",marginTop:14}}>
+                <p style={{margin:"0 0 4px",fontSize:12,color:"#0066FF",fontWeight:600}}>📋 Solicitud inicial</p>
+                <p style={{margin:0,fontSize:13,color:"#333"}}>Reingreso por testigo de presión de aceite</p>
+              </div>
+
+              <div style={{borderTop:"1px solid #f0f0f0",paddingTop:16,marginTop:16}}>
+                <p style={{margin:"0 0 12px",fontSize:13,fontWeight:600,color:"#555"}}>Estado del proceso</p>
+
+                {[
+                  { label:"Diagnóstico", num:1, completado:true, color:"#E24B4A", text:"#A32D2D", bg:"#FCEBEB", border:"#E24B4A30", subestados:[
+                    {label:"Pendiente de diagnóstico",done:true,inicio:"14-05-2026 09:52",fin:"14-05-2026 12:36"},
+                    {label:"En diagnóstico",done:true,inicio:"14-05-2026 17:05",fin:"18-05-2026 08:40"},
+                  ]},
+                  { label:"En Trabajo", num:2, activo:true, color:"#EF9F27", text:"#633806", bg:"#FAEEDA", border:"#EF9F2730", subestados:[
+                    {label:"Espera de repuesto",done:true,inicio:"18-05-2026 08:40",fin:"18-05-2026 09:15"},
+                    {label:"Disponible para trabajo",done:true,inicio:"18-05-2026 09:15",fin:"18-05-2026 09:30"},
+                    {label:"Trabajando",now:true,inicio:"18-05-2026 08:40"},
+                    {label:"Prueba de ruta"},
+                  ]},
+                  { label:"Listo", num:3, color:"#1D9E75", text:"#085041", bg:"#E1F5EE", border:"#1D9E7530", subestados:[
+                    {label:"Listo para entregar"},
+                    {label:"Entregado a cliente"},
+                  ]},
+                ].map((grupo, gi) => (
+                  <div key={gi} style={{marginBottom:20}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${grupo.completado||grupo.activo?grupo.border:"#f0f0f0"}`}}>
+                      <div style={{width:22,height:22,borderRadius:"50%",background:grupo.completado||grupo.activo?grupo.color:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:grupo.completado||grupo.activo?"#fff":"#ccc",flexShrink:0}}>
+                        {grupo.completado?"✓":grupo.num}
+                      </div>
+                      <span style={{fontWeight:700,fontSize:12,letterSpacing:"0.08em",textTransform:"uppercase",color:grupo.completado||grupo.activo?grupo.text:"#ccc"}}>{grupo.label}</span>
+                      {grupo.completado && <span style={{marginLeft:"auto",background:grupo.bg,color:grupo.text,border:`1px solid ${grupo.border}`,borderRadius:20,padding:"1px 10px",fontSize:11,fontWeight:500}}>Completado ✓</span>}
+                    </div>
+                    {grupo.subestados.map((s,si) => (
+                      <div key={si} style={{display:"flex",gap:0}}>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:28,flexShrink:0}}>
+                          <div style={{
+                            width:12,height:12,borderRadius:"50%",marginTop:13,flexShrink:0,
+                            background:s.done?grupo.color:s.now?"#6EE7A8":"#e8e8e8",
+                            boxShadow:s.now?"0 0 0 4px rgba(110,231,168,.2)":"none",
+                            border:(!s.done&&!s.now)?"2px solid #d0d0d0":"none",
+                          }}/>
+                          {si < grupo.subestados.length-1 && <div style={{width:2,flex:1,minHeight:14,background:s.done?grupo.color+"60":"#e8e8e8",marginTop:3}}/>}
+                        </div>
+                        <div style={{flex:1,paddingBottom:si===grupo.subestados.length-1?4:12,paddingLeft:10,paddingTop:10}}>
+                          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                            <span style={{fontSize:14,fontWeight:s.now?600:s.done?500:400,color:s.now?"#1a1a1a":s.done?"#555":"#bbb",flex:1}}>{s.label}</span>
+                            {s.now && <span style={{background:grupo.color,color:"#fff",borderRadius:20,padding:"2px 10px",fontSize:11,fontWeight:600}}>Estado actual</span>}
+                            {s.done && <span style={{background:grupo.bg,color:grupo.text,border:`1px solid ${grupo.border}`,borderRadius:20,padding:"2px 10px",fontSize:11,fontWeight:500}}>Completado ✓</span>}
+                          </div>
+                          {(s.done||s.now) && s.inicio && (
+                            <div style={{display:"flex",gap:12,marginTop:4,flexWrap:"wrap"}}>
+                              <span style={{fontSize:12,color:"#888"}}>{s.inicio}</span>
+                              {s.fin && <span style={{fontSize:12,color:"#aaa"}}>→ {s.fin}</span>}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </aside>
         </div>
