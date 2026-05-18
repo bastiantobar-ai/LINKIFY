@@ -1409,12 +1409,8 @@ function PortalCliente({ onVolver, modoInterno = false }) {
   const mapped = caso ? getMapped(caso.estado_operativo) : null;
   const cfg    = mapped ? ESTADOS[mapped.principal] : null;
 
-  // Comentario inicial: solo si el registro es PENDIENTE o PENDIENTE DE DIAGNÓSTICO
-  const comentarioInicial = historico.find(h => {
-    const estado = h.estado_operativo?.toUpperCase().trim();
-    const esPendiente = estado === "PENDIENTE" || estado === "PENDIENTE DE DIAGNÓSTICO";
-    return esPendiente && h.comentario && h.comentario.trim() !== "";
-  })?.comentario || null;
+  // Comentario inicial: primer registro del historial que tenga comentario
+  const comentarioInicial = historico.find(h => h.comentario && h.comentario.trim() !== "")?.comentario || null;
 
   function triggerShake() { setShake(true); setTimeout(() => setShake(false), 400); }
 
