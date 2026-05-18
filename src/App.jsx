@@ -1394,9 +1394,9 @@ function PortalCliente({ onVolver, modoInterno = false }) {
         if (!modoInterno) {
           const tipo = /^\d+$/.test(q) ? 'numero_caso' : 'patente';
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
-          // Mostrar feedback solo si ENTREGADO A CLIENTE tiene fecha_listo (entrega real)
-          const esEntregado = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE" && f.fecha_listo);
-          if (esEntregado) setTimeout(() => setShowFeedback(true), 6000);
+          // Mostrar feedback si el vehículo llegó a LISTO para entregar
+          const esListo = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "LISTO");
+          if (esListo) setTimeout(() => setShowFeedback(true), 6000);
         }
       }
     } catch (e) {
