@@ -661,6 +661,7 @@ function LoginInterno({ onLogin, onVolver }) {
 
 function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
   const { subestado, principal } = getMapped(caso.estado_operativo);
+  const [estadoComentario, setEstadoComentario] = useState(caso.estado_operativo?.toUpperCase().trim() || "DIAGNÓSTICO");
   const [comentario, setComentario] = useState("");
   const [creadoPor, setCreadoPor]   = useState(defaultUser);
   const [saving, setSaving]         = useState(false);
@@ -673,7 +674,7 @@ function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
       await addComentario({
         numero_caso: caso.numero_caso,
         patente: caso.patente,
-        estado: caso.estado_operativo,
+        estado: estadoComentario,
         comentario: comentario.trim(),
         creado_por: creadoPor.trim() || "Sin nombre",
         created_at: new Date().toISOString(),
@@ -699,9 +700,19 @@ function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
         <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
           Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong>
         </p>
-        <div style={{ marginTop: 6 }}><SubBadge subestado={subestado} principal={principal} /></div>
+        <div style={{ marginTop: 6 }}><SubBadge subestado={getMapped(estadoComentario).subestado} principal={getMapped(estadoComentario).principal} /></div>
       </div>
-      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>Tu nombre</label>
+      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>Estado</label>
+      <select
+        style={{ ...inputStyle, marginBottom: 4 }}
+        value={estadoComentario}
+        onChange={e => setEstadoComentario(e.target.value)}
+      >
+        {Object.keys(ESTADO_MAP).filter(k => k !== "PENDIENTE").map(k => (
+          <option key={k} value={k}>{ESTADO_MAP[k].subestado}</option>
+        ))}
+      </select>
+      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4, marginTop: 8 }}>Tu nombre</label>
       <input style={inputStyle} value={creadoPor} onChange={e => setCreadoPor(e.target.value)} placeholder="Ej: Juan Pérez" />
       <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4, marginTop: 12 }}>Comentario *</label>
       <textarea style={{ ...inputStyle, minHeight: 90, resize: "vertical" }} value={comentario} onChange={e => setComentario(e.target.value)} placeholder="Describe el estado actual del vehículo..." />
@@ -772,8 +783,7 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
   const ultimoComentario = comentariosDeCaso[0];
   const borderColor = colorBorde ? cfg.color : (alerta === "advertencia" ? "#E24B4A" : "#e0e0e0");
   const bgCard = colorBorde ? cfg.bg + "55" : "#fff";
-  const [expandido, setExpandido] = useState(false);
-  const [estadoSeleccionado, setEstadoSeleccionado] = useState(caso.estado_operativo);
+
 
   return (
     <div style={{
@@ -819,32 +829,7 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
               </p>
             : <p style={{ margin: 0, fontSize: 13, color: "#ddd", fontStyle: "italic" }}>Sin comentarios</p>
           }
-          {/* Desplegable comentar por estado */}
-          <button onClick={() => setExpandido(e => !e)} style={{
-            marginTop: 8, background: "none", border: "none", cursor: "pointer",
-            fontSize: 12, color: "#aaa", padding: 0, display: "flex", alignItems: "center", gap: 4,
-          }}>
-            {expandido ? "▲" : "▼"} Comentar por estado
-          </button>
-          {expandido && (
-            <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <select
-                value={estadoSeleccionado}
-                onChange={e => setEstadoSeleccionado(e.target.value)}
-                style={{ padding: "6px 10px", borderRadius: 7, border: "1px solid #e0e0e0", background: "#fafafa", fontSize: 12, color: "#555" }}
-              >
-                {Object.keys(ESTADO_MAP).filter(k => k !== "PENDIENTE").map(k => (
-                  <option key={k} value={k}>{ESTADO_MAP[k].subestado}</option>
-                ))}
-              </select>
-              <button
-                onClick={() => onAgregarComentario({ ...caso, estado_operativo: estadoSeleccionado })}
-                style={{ padding: "6px 12px", borderRadius: 7, border: "none", background: KAVAK_BLUE, color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 500 }}
-              >
-                + Comentario
-              </button>
-            </div>
-          )}
+
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => onAgregarComentario(caso)} style={{
