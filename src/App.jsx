@@ -631,26 +631,12 @@ function LoginInterno({ onLogin, onVolver }) {
             </div>
           </div>
         </section>
-        <aside className="kds-preview">
-          <span className="kds-preview__eyebrow">Vista previa · Panel interno</span>
-          <h2 className="kds-preview__title">Operación de post-venta en un solo lugar.</h2>
-          <div className="kds-case-card">
-            <div className="kds-case-card__head"><span>Cola de hoy</span><span style={{color:"#6EE7A8"}}>● Activos</span></div>
-            <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:16}}>
-              {[
-                {id:"Caso #727885",car:"Espera de repuesto",color:"#FFD37A"},
-                {id:"Caso #729004",car:"Disponible para trabajo",color:"#9BB4FF"},
-                {id:"Caso #730457",car:"Listo para entregar",color:"#6EE7A8"},
-                {id:"Caso #728343",car:"En diagnóstico",color:"#E8E9EE"},
-              ].map(r => (
-                <div key={r.id} style={{display:"grid",gridTemplateColumns:"120px 1fr auto",alignItems:"center",gap:10,padding:"8px 0",borderTop:"1px solid rgba(255,255,255,.06)",fontSize:13}}>
-                  <span style={{fontFamily:"var(--font-mono)",color:"rgba(255,255,255,.6)",fontSize:12}}>{r.id}</span>
-                  <span>{r.car}</span>
-                  <span style={{fontSize:11,padding:"3px 8px",borderRadius:999,background:"rgba(255,255,255,.08)",color:r.color,fontWeight:500}}>●</span>
-                </div>
-              ))}
-            </div>
-          </div>
+        <aside style={{
+          position:"relative", overflow:"hidden",
+          backgroundImage:"url('https://static.emol.cl/emol50/Fotos/2024/03/19/file_20240319131216.jpg')",
+          backgroundSize:"cover", backgroundPosition:"center",
+        }}>
+          <div style={{position:"absolute",inset:0,background:"rgba(10,11,20,0.45)"}} />
         </aside>
       </div>
     </div>
