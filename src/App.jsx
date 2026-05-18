@@ -633,7 +633,7 @@ function LoginInterno({ onLogin, onVolver }) {
         </section>
         <aside style={{
           position:"relative", overflow:"hidden",
-          backgroundImage:"url('https://static.emol.cl/emol50/Fotos/2024/03/19/file_20240319131216.jpg')",
+          backgroundImage:"url('https://elcomercio.pe/resizer/v2/CXTCJBTRVVHDNNNYKVW5AQDJGM.jpg?auth=02ab52d09ae8637b6d7de6cc064a0dd018ac69e5aba678c85f94ffcbc17d0f57&width=980&height=551&quality=75&smart=true')",
           backgroundSize:"cover", backgroundPosition:"center",
         }}>
           <div style={{position:"absolute",inset:0,background:"rgba(10,11,20,0.45)"}} />
