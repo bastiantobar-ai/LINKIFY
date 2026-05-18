@@ -772,6 +772,8 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
   const ultimoComentario = comentariosDeCaso[0];
   const borderColor = colorBorde ? cfg.color : (alerta === "advertencia" ? "#E24B4A" : "#e0e0e0");
   const bgCard = colorBorde ? cfg.bg + "55" : "#fff";
+  const [expandido, setExpandido] = useState(false);
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState(caso.estado_operativo);
 
   return (
     <div style={{
@@ -813,10 +815,36 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
           {ultimoComentario
             ? <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
                 💬 {ultimoComentario.comentario}
-                <span style={{ color: "#ccc", marginLeft: 6, fontSize: 11 }}>— {ultimoComentario.creado_por} · {formatDate(ultimoComentario.created_at)}</span>
+                <span style={{ color: "#ccc", marginLeft: 6, fontSize: 11 }}>{formatDate(ultimoComentario.created_at)}</span>
               </p>
             : <p style={{ margin: 0, fontSize: 13, color: "#ddd", fontStyle: "italic" }}>Sin comentarios</p>
           }
+          {/* Desplegable comentar por estado */}
+          <button onClick={() => setExpandido(e => !e)} style={{
+            marginTop: 8, background: "none", border: "none", cursor: "pointer",
+            fontSize: 12, color: "#aaa", padding: 0, display: "flex", alignItems: "center", gap: 4,
+          }}>
+            {expandido ? "▲" : "▼"} Comentar por estado
+          </button>
+          {expandido && (
+            <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <select
+                value={estadoSeleccionado}
+                onChange={e => setEstadoSeleccionado(e.target.value)}
+                style={{ padding: "6px 10px", borderRadius: 7, border: "1px solid #e0e0e0", background: "#fafafa", fontSize: 12, color: "#555" }}
+              >
+                {Object.keys(ESTADO_MAP).filter(k => k !== "PENDIENTE").map(k => (
+                  <option key={k} value={k}>{ESTADO_MAP[k].subestado}</option>
+                ))}
+              </select>
+              <button
+                onClick={() => onAgregarComentario({ ...caso, estado_operativo: estadoSeleccionado })}
+                style={{ padding: "6px 12px", borderRadius: 7, border: "none", background: KAVAK_BLUE, color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 500 }}
+              >
+                + Comentario
+              </button>
+            </div>
+          )}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => onAgregarComentario(caso)} style={{
@@ -1114,7 +1142,10 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const key        = nk(s.key);
                 const existeEnHist = !!filasPorEstado[key];
                 const tieneAbierta = existeEnHist && filasPorEstado[key].some(f => !f.fecha_listo);
-                const retroced   = !completado && !activo && existeEnHist && !tieneAbierta;
+                // Si el caso llegó a LISTO o ENTREGADO, todos los estados anteriores
+                // se muestran como completados, sin marcar retrocesos
+                const llegóAListo = ordenActual >= 6;
+                const retroced   = !llegóAListo && !completado && !activo && existeEnHist && !tieneAbierta;
                 const tieneInfo  = completado || activo || retroced;
                 const { filaInicio, filaFin } = getFechas(key);
                 const inicioStr  = filaInicio ? formatFechaHora(filaInicio.fecha_ingreso, filaInicio.hora_ingreso) : null;
@@ -1185,7 +1216,7 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                               borderRadius: "0 8px 8px 0", padding: "8px 12px",
                             }}>
                               <p style={{ margin: "0 0 3px", fontSize: 13, color: "#333" }}>💬 {c.comentario}</p>
-                              <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{c.creado_por} · {formatDate(c.created_at)}</p>
+                              <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{formatDate(c.created_at)}</p>
                             </div>
                           ))}
                         </div>
@@ -1369,7 +1400,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
   const [loading, setLoading]         = useState(false);
   const [err, setErr]                 = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
-  const [modoTab, setModoTab] = useState("caso");
+
   const [shake, setShake] = useState(false);
 
   async function buscar() {
@@ -1394,7 +1425,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
           // Mostrar feedback solo si ENTREGADO A CLIENTE tiene fecha_listo (entrega real)
           const esEntregado = hist.some(f => f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE" && f.fecha_listo);
-          if (esEntregado) setTimeout(() => setShowFeedback(true), 10000);
+          if (esEntregado) setTimeout(() => setShowFeedback(true), 6000);
         }
       }
     } catch (e) {
@@ -1430,29 +1461,20 @@ function PortalCliente({ onVolver, modoInterno = false }) {
               <p className="kds-subscreen__sub" style={{marginTop:16}}>Ingresa los datos de tu caso para ver el estado actualizado de tu vehículo y próximos pasos.</p>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:20}}>
-              <div className="kds-segment">
-                <button className={`kds-segment__btn${modoTab==="caso"?" is-active":""}`} onClick={() => { setModoTab("caso"); setBusqueda(""); }}>
-                  <IconShield /> Número de caso
-                </button>
-                <button className={`kds-segment__btn${modoTab==="patente"?" is-active":""}`} onClick={() => { setModoTab("patente"); setBusqueda(""); }}>
-                  <IconSearch /> Patente
-                </button>
-              </div>
               <div className="kds-field">
                 <label className="kds-field__label">
-                  <span>{modoTab === "caso" ? "Número de caso" : "Patente del vehículo"}</span>
-                  <small>{modoTab === "caso" ? "Lo encuentras en el correo de confirmación" : "Formato chileno sin guiones"}</small>
+                  <span>Número de caso o patente</span>
+                  <small>Puedes ingresar cualquiera de los dos</small>
                 </label>
                 <div className={`kds-input-wrap${shake?" is-error kds-shake":""}`}>
                   <span className="kds-input-wrap__icon"><IconSearch /></span>
                   <input className="kds-input kds-input--mono"
-                    placeholder={modoTab === "caso" ? "Ej: 727885" : "Ej: LHHY81"}
+                    placeholder="Ej: 727885 o LHHY81"
                     value={busqueda}
                     onChange={e => setBusqueda(e.target.value.toUpperCase())}
                     onKeyDown={e => e.key === "Enter" && (busqueda.trim() ? buscar() : triggerShake())}
                     autoComplete="off" spellCheck={false}
                   />
-                  <span className="kds-input-wrap__addon">{modoTab === "caso" ? "CASO ID" : "PATENTE"}</span>
                 </div>
               </div>
               {err && (
@@ -1627,7 +1649,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             const notaGeneral = comentarios.find(c => c.es_general === true);
             return notaGeneral ? (
               <div style={{ background: KAVAK_BLUE_LIGHT, border: `1px solid ${KAVAK_BLUE}20`, borderRadius: 10, padding: "12px 14px", marginTop: 8 }}>
-                <p style={{ margin: "0 0 6px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>💬 Última actualización del equipo</p>
+                <p style={{ margin: "0 0 6px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>💬 Comentario general</p>
                 <p style={{ margin: "0 0 4px", fontSize: 14, color: "#333" }}>{notaGeneral.comentario}</p>
                 <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{formatDate(notaGeneral.created_at)}</p>
               </div>
@@ -1644,28 +1666,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
       {/* Botón WhatsApp y volver — solo en portal cliente real */}
       {!modoInterno && (
         <>
-          <a
-            href="https://api.whatsapp.com/send/?phone=56229145587&text=Hola%2C+me+gustar%C3%ADa+hablar+con+un+asesor+de+Kavak.&type=phone_number&app_absent=0"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              marginTop: 24,
-              display: "inline-flex", alignItems: "center", gap: 10,
-              background: "#25D366", color: "#fff",
-              borderRadius: 12, padding: "12px 22px",
-              fontWeight: 600, fontSize: 14,
-              textDecoration: "none",
-              boxShadow: "0 2px 12px rgba(37,211,102,0.35)",
-              transition: "transform 0.15s, box-shadow 0.15s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(37,211,102,0.45)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(37,211,102,0.35)"; }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-            Hablar con un asesor
-          </a>
+
           <button
             onClick={() => setShowFeedback(true)}
             style={{
@@ -1681,7 +1682,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 4px 16px ${KAVAK_BLUE}20`; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
           >
-            💬 Dejar comentario
+            ⭐ Evaluar herramienta de seguimiento
           </button>
           <button onClick={onVolver} style={{
             marginTop: 16, background: "none", border: "none", cursor: "pointer",
@@ -1729,12 +1730,7 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const pendientesCount = casos.filter(c => {
-    if (c.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE") return false;
-    const comentariosDeCaso = comentariosMap[c.numero_caso] || [];
-    const ultimo = comentariosDeCaso[0];
-    return !ultimo || ultimo.estado?.toUpperCase().trim() !== c.estado_operativo?.toUpperCase().trim();
-  }).length;
+
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa" }}>
@@ -1751,7 +1747,6 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
         </div>
         {[
           { key: "backlog", label: "Backlog" },
-          { key: "pendientes", label: "Pendientes", badge: pendientesCount > 0 ? pendientesCount : null },
           { key: "buscar", label: "🔍 Buscar caso" },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{
@@ -1800,13 +1795,7 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
             onVerHistorial={c => setModalHistorial(c)}
             onRefresh={load} />
         )}
-        {tab === "pendientes" && (
-          <TabPendientes casos={casos} comentariosMap={comentariosMap}
-            onAgregarComentario={c => setModalComentario(c)}
-            onNotaGeneral={c => setModalNotaGeneral(c)}
-            onVerHistorial={c => setModalHistorial(c)}
-            onRefresh={load} />
-        )}
+
         {tab === "buscar" && (
           <div>
             <div style={{ marginBottom: 20 }}>
