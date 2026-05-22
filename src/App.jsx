@@ -319,6 +319,16 @@ function formatUbicacion(ubicacion) {
   return ubicacion;
 }
 
+// ── Site normalizer ───────────────────────────────────────────────
+
+function normalizarSite(ubicacion) {
+  if (!ubicacion) return null;
+  const u = ubicacion.toUpperCase().trim();
+  if (u.includes("DEPOT")) return "DEPOT";
+  if (u.includes("MBI")) return "MBI";
+  return u;
+}
+
 // ── API REST ──────────────────────────────────────────────────────
 
 function supabaseFetch(path, options = {}) {
@@ -357,15 +367,12 @@ async function addComentario(data) {
 function filtrarProcesoReciente(todos) {
   if (!todos.length) return [];
 
-  // Tomar solo el id_sistema más alto (proceso más reciente)
   const maxId = Math.max(...todos.map(f => f.id_sistema));
   const proceso = todos.filter(f => f.id_sistema === maxId);
 
-  // Descartar filas sin ninguna fecha (registros corruptos)
   const validos = proceso.filter(f => f.fecha_ingreso || f.fecha_listo);
   const base = validos.length > 0 ? validos : proceso;
 
-  // Ordenar cronológicamente primero para saber cuál ENTREGADO es el más reciente
   const ordenado = [...base].sort((a, b) => {
     if (!a.fecha_ingreso && !b.fecha_ingreso) return 0;
     if (!a.fecha_ingreso) return -1;
@@ -374,17 +381,13 @@ function filtrarProcesoReciente(todos) {
     const db = new Date(b.fecha_ingreso + "T" + (b.hora_ingreso || "00:00:00"));
     return da - db;
   });
-  // El último registro cronológico
   const ultimoRegistro = ordenado[ordenado.length - 1];
-  // Descartar ENTREGADO A CLIENTE sin fecha_listo SOLO si no es el último registro
-  // Si es el último, es la entrega real abierta y debe mantenerse
   const final = ordenado.filter(f => {
     const esEntregado = f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE";
     if (esEntregado && !f.fecha_listo && f !== ultimoRegistro) return false;
     return true;
   });
 
-  // Ya está ordenado cronológicamente
   return final;
 }
 
@@ -770,7 +773,6 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
   const borderColor = colorBorde ? cfg.color : (alerta === "advertencia" ? "#E24B4A" : "#e0e0e0");
   const bgCard = colorBorde ? cfg.bg + "55" : "#fff";
 
-
   return (
     <div style={{
       background: bgCard,
@@ -815,7 +817,6 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
               </p>
             : <p style={{ margin: 0, fontSize: 13, color: "#ddd", fontStyle: "italic" }}>Sin comentarios</p>
           }
-
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
           <button onClick={() => onAgregarComentario(caso)} style={{
@@ -957,6 +958,7 @@ function TabPendientes({ casos, comentariosMap, onAgregarComentario, onNotaGener
 
 function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral, onVerHistorial, onRefresh }) {
   const [filtro, setFiltro] = useState("Todos");
+  const [filtroSite, setFiltroSite] = useState("Todos");
   const [busquedaCaso, setBusquedaCaso] = useState("");
   const [busquedaPatente, setBusquedaPatente] = useState("");
 
@@ -964,6 +966,7 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
     if (c.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE") return false;
     const { principal } = getMapped(c.estado_operativo);
     if (filtro !== "Todos" && principal !== filtro) return false;
+    if (filtroSite !== "Todos" && normalizarSite(c.ubicacion) !== filtroSite) return false;
     if (busquedaCaso && !c.numero_caso?.toString().toLowerCase().includes(busquedaCaso.toLowerCase())) return false;
     if (busquedaPatente && !c.patente?.toLowerCase().includes(busquedaPatente.toLowerCase())) return false;
     return true;
@@ -976,10 +979,26 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
     conteos[principal] = (conteos[principal] || 0) + 1;
   });
 
+  // Conteos por site para los botones
+  const conteosSite = { DEPOT: 0, MBI: 0 };
+  casos.forEach(c => {
+    if (c.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE") return;
+    const site = normalizarSite(c.ubicacion);
+    if (site === "DEPOT") conteosSite.DEPOT++;
+    else if (site === "MBI") conteosSite.MBI++;
+  });
+
   const inputStyle = { padding: "8px 12px", borderRadius: 8, border: "1px solid #e0e0e0", background: "#fafafa", color: "#1a1a1a", fontSize: 13 };
+
+  const SITES = [
+    { key: "Todos", label: "Todos los sites" },
+    { key: "DEPOT", label: "📍 Schiappacasse", count: conteosSite.DEPOT },
+    { key: "MBI",   label: "📍 Mall B. Independencia", count: conteosSite.MBI },
+  ];
 
   return (
     <div>
+      {/* Métricas */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
         {[
           { label: "Total activos", value: casos.filter(c => c.estado_operativo?.toUpperCase().trim() !== "ENTREGADO A CLIENTE").length, color: KAVAK_BLUE, bg: KAVAK_BLUE_LIGHT },
@@ -993,6 +1012,45 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
           </div>
         ))}
       </div>
+
+      {/* Filtro de site — botones tipo pill */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+        <span style={{ fontSize: 12, color: "#aaa", fontWeight: 500, marginRight: 4 }}>Site:</span>
+        {SITES.map(s => (
+          <button
+            key={s.key}
+            onClick={() => setFiltroSite(s.key)}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 20,
+              border: filtroSite === s.key ? `1.5px solid ${KAVAK_BLUE}` : "1px solid #e0e0e0",
+              background: filtroSite === s.key ? KAVAK_BLUE_LIGHT : "#fafafa",
+              color: filtroSite === s.key ? KAVAK_BLUE : "#555",
+              fontWeight: filtroSite === s.key ? 600 : 400,
+              cursor: "pointer",
+              fontSize: 13,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              transition: "all 0.15s",
+            }}
+          >
+            {s.label}
+            {s.count !== undefined && (
+              <span style={{
+                background: filtroSite === s.key ? KAVAK_BLUE : "#e8e8e8",
+                color: filtroSite === s.key ? "#fff" : "#777",
+                borderRadius: 10,
+                padding: "1px 7px",
+                fontSize: 11,
+                fontWeight: 600,
+              }}>{s.count}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Barra de búsqueda y filtro de estado */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
         <p style={{ margin: 0, fontSize: 13, color: "#aaa" }}>{backlog.length} resultado{backlog.length !== 1 ? "s" : ""}</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1005,6 +1063,7 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
           <button onClick={onRefresh} style={{ ...inputStyle, cursor: "pointer" }}>↻</button>
         </div>
       </div>
+
       {backlog.length === 0
         ? <p style={{ color: "#ccc", textAlign: "center", marginTop: 40, fontSize: 14 }}>Sin casos para mostrar</p>
         : <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1023,14 +1082,11 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
 // ── Progreso cliente ──────────────────────────────────────────────
 
 function ProgresoCliente({ historico, comentarios = [] }) {
-  // Estado actual = último elemento del historial (ordenado asc por Supabase)
   const casoActual  = historico[historico.length - 1];
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
 
   const nk = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
 
-  // Por cada estado (normalizado) guardamos:
-  //   filas[k] = array de todas sus filas ordenadas cronológicamente asc
   const filasPorEstado = {};
   for (const fila of historico) {
     const k = nk(fila.estado_operativo?.toUpperCase().trim());
@@ -1039,17 +1095,11 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     filasPorEstado[k].push(fila);
   }
 
-
-  // Para un subestado dado, elige qué fila usar para inicio y fin:
-  // - Si hay una fila sin fecha_listo (abierta): inicio = esa fila, fin = null
-  // - Si todas cerradas: inicio = primera, fin = última
   function getFechas(k) {
     const filas = filasPorEstado[k];
     if (!filas || filas.length === 0) return { filaInicio: null, filaFin: null };
-    // Buscar filas abiertas (sin fecha_listo) — tomar la MÁS RECIENTE (última)
     const abiertas = filas.filter(f => !f.fecha_listo);
     if (abiertas.length > 0) return { filaInicio: abiertas[abiertas.length - 1], filaFin: null };
-    // Todas cerradas → tomar la más reciente
     const ultima = filas[filas.length - 1];
     return { filaInicio: ultima, filaFin: ultima };
   }
@@ -1069,7 +1119,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     { key: "Listo",       label: "Listo",       subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Listo")       },
   ];
 
-  // Colores de dot por grupo
   const DC = {
     Diagnostico: "#E24B4A",
     EnTrabajo:   "#EF9F27",
@@ -1086,7 +1135,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
 
         return (
           <div key={grupo.key} style={{ marginBottom: 20 }}>
-            {/* Grupo header */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${grupoActivo ? cfg.border : "#f0f0f0"}` }}>
               <div style={{
                 width: 22, height: 22, borderRadius: "50%",
@@ -1104,7 +1152,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
               )}
             </div>
 
-            {/* Subestados timeline */}
             <div style={{ display: "flex", flexDirection: "column" }}>
               {grupo.subestados.map((s, si) => {
                 const ordenS     = getOrden(s.key);
@@ -1113,8 +1160,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                 const key        = nk(s.key);
                 const existeEnHist = !!filasPorEstado[key];
                 const tieneAbierta = existeEnHist && filasPorEstado[key].some(f => !f.fecha_listo);
-                // Si el caso llegó a LISTO o ENTREGADO, todos los estados anteriores
-                // se muestran como completados, sin marcar retrocesos
                 const llegóAListo = ordenActual >= 6;
                 const retroced   = !llegóAListo && !completado && !activo && existeEnHist && !tieneAbierta;
                 const tieneInfo  = completado || activo || retroced;
@@ -1125,7 +1170,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
 
                 return (
                   <div key={s.key} style={{ display: "flex", gap: 0 }}>
-                    {/* Dot + línea */}
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 28, flexShrink: 0 }}>
                       <div style={{
                         width: 12, height: 12, borderRadius: "50%", marginTop: 13, flexShrink: 0,
@@ -1138,7 +1182,6 @@ function ProgresoCliente({ historico, comentarios = [] }) {
                       )}
                     </div>
 
-                    {/* Contenido */}
                     <div style={{ flex: 1, paddingBottom: isLast ? 4 : 12, paddingLeft: 10, paddingTop: 10 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <span style={{
@@ -1210,7 +1253,7 @@ function ModalFeedback({ caso, onClose }) {
   const [puntuacion, setPuntuacion] = useState(0);
   const [hover, setHover]           = useState(0);
   const [sugerencia, setSugerencia] = useState("");
-  const [paso, setPaso]             = useState(1); // 1: puntuacion, 2: sugerencia, 3: gracias
+  const [paso, setPaso]             = useState(1);
   const [saving, setSaving]         = useState(false);
   const [err, setErr]               = useState("");
 
@@ -1278,7 +1321,6 @@ function ModalFeedback({ caso, onClose }) {
               Califica del 1 al 5 qué tan útil te resultó esta herramienta de seguimiento
             </p>
 
-            {/* Estrellas */}
             <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 10 }}>
               {[1, 2, 3, 4, 5].map(n => (
                 <button
@@ -1390,11 +1432,9 @@ function PortalCliente({ onVolver, modoInterno = false }) {
         setHistorico(hist);
         const comms = await getComentariosByCaso(casoReciente.numero_caso);
         setComentarios(comms);
-        // Solo registrar si es portal cliente real, no vista interna
         if (!modoInterno) {
           const tipo = /^\d+$/.test(q) ? 'numero_caso' : 'patente';
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
-          // Mostrar feedback solo si el estado ACTUAL es LISTO (no si solo pasó por ahí antes)
           const estadoActual = hist[hist.length - 1]?.estado_operativo?.toUpperCase().trim();
           if (estadoActual === "LISTO") setTimeout(() => setShowFeedback(true), 6000);
         }
@@ -1409,7 +1449,6 @@ function PortalCliente({ onVolver, modoInterno = false }) {
   const mapped = caso ? getMapped(caso.estado_operativo) : null;
   const cfg    = mapped ? ESTADOS[mapped.principal] : null;
 
-  // Comentario inicial: primer registro del historial que tenga comentario
   const comentarioInicial = historico.find(h => h.comentario && h.comentario.trim() !== "")?.comentario || null;
 
   function triggerShake() { setShake(true); setTimeout(() => setShake(false), 400); }
@@ -1471,7 +1510,6 @@ function PortalCliente({ onVolver, modoInterno = false }) {
           }}>
             <p style={{margin:"0 0 24px",fontSize:11,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase",color:"#aaa"}}>Vista previa · Portal cliente</p>
 
-            {/* Card caso — replica exacta del portal cliente */}
             <div style={{
               background:"#fff", borderRadius:16, border:"1px solid #ececec",
               borderTop:"4px solid #EF9F27",
@@ -1487,7 +1525,6 @@ function PortalCliente({ onVolver, modoInterno = false }) {
               <p style={{margin:"4px 0 0",fontSize:15,color:"#555",fontWeight:500}}>🚗 KAVA44</p>
               <p style={{margin:"3px 0 0",fontSize:13,color:"#bbb"}}>📍 Kavak Schiappacasse</p>
 
-              {/* Solicitud inicial */}
               <div style={{background:"#E5F0FF",border:"1px solid #0066FF20",borderLeft:"4px solid #0066FF",borderRadius:"0 10px 10px 0",padding:"12px 14px",marginTop:14}}>
                 <p style={{margin:"0 0 4px",fontSize:12,color:"#0066FF",fontWeight:600}}>📋 Solicitud inicial</p>
                 <p style={{margin:0,fontSize:13,color:"#333"}}>Reingreso por testigo de presión de aceite</p>
@@ -1607,7 +1644,6 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 {formatUbicacion(caso.ubicacion)}</p>
           )}
 
-          {/* Tarjeta Solicitud inicial */}
           {comentarioInicial && (
             <div style={{
               background: KAVAK_BLUE_LIGHT,
@@ -1644,15 +1680,12 @@ function PortalCliente({ onVolver, modoInterno = false }) {
         </div>
       )}
 
-      {/* Modal Feedback */}
       {showFeedback && caso && (
         <ModalFeedback caso={caso} onClose={() => setShowFeedback(false)} />
       )}
 
-      {/* Botón WhatsApp y volver — solo en portal cliente real */}
       {!modoInterno && (
         <>
-
           <button
             onClick={() => setShowFeedback(true)}
             style={{
@@ -1716,8 +1749,6 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
 
   useEffect(() => { load(); }, [load]);
 
-
-
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa" }}>
       <div style={{
@@ -1758,7 +1789,6 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
               {userEmail}
             </span>
           )}
-
           <button onClick={onCerrarSesion} style={{
             fontSize: 12, color: "#E24B4A", background: "none", border: "1px solid #E24B4A40",
             borderRadius: 6, padding: "4px 10px", cursor: "pointer",
