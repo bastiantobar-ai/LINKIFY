@@ -88,7 +88,6 @@ function InjectStyles() {
       .kds-hero__media { position:relative; overflow:hidden; background:#0a0b14; }
       .kds-hero__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 30%; }
       .kds-hero__veil { position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,11,20,0) 50%,rgba(10,11,20,.55) 100%),linear-gradient(90deg,rgba(10,11,20,.2) 0%,rgba(10,11,20,0) 30%); }
-      .kds-plate { position:absolute; left:50%; bottom:8%; transform:translateX(-50%) rotate(-1.5deg); background:#0a0b14; color:#fff; font-family:var(--font-display); font-weight:800; letter-spacing:0.14em; font-size:20px; padding:10px 20px 9px; border-radius:6px; border:2px solid rgba(255,255,255,.85); }
       .kds-media-caption { position:absolute; bottom:0; left:0; right:0; padding:28px; display:flex; justify-content:space-between; align-items:flex-end; }
       .kds-media-caption__title { color:#fff; font-family:var(--font-display); font-size:22px; font-weight:600; margin:0 0 4px; letter-spacing:-0.02em; }
       .kds-media-caption__sub { color:rgba(255,255,255,.55); font-size:13px; margin:0; }
@@ -102,9 +101,6 @@ function InjectStyles() {
       .kds-back-btn:hover { color:var(--ink); }
       .kds-subscreen__title { font-family:var(--font-display); font-weight:600; font-size:clamp(36px,3.8vw,60px); line-height:1; letter-spacing:-0.04em; margin:0; }
       .kds-subscreen__sub { font-size:16px; line-height:1.5; color:var(--ink-3); max-width:460px; margin:0; }
-      .kds-segment { display:inline-flex; padding:4px; background:var(--line-2); border-radius:999px; }
-      .kds-segment__btn { appearance:none; border:0; background:transparent; padding:8px 16px; border-radius:999px; font-size:14px; font-weight:500; color:var(--muted); cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:background .2s,color .2s; }
-      .kds-segment__btn.is-active { background:var(--paper); color:var(--ink); box-shadow:0 1px 2px rgba(10,11,20,.06),0 4px 12px -6px rgba(10,11,20,.12); }
       .kds-field { display:flex; flex-direction:column; gap:8px; }
       .kds-field__label { font-size:13px; font-weight:500; color:var(--ink-3); display:flex; justify-content:space-between; align-items:baseline; }
       .kds-field__label small { color:var(--muted-2); font-weight:400; }
@@ -115,7 +111,6 @@ function InjectStyles() {
       .kds-input { flex:1; border:0; outline:0; background:transparent; padding:18px 16px; font-size:17px; color:var(--ink); letter-spacing:-0.005em; }
       .kds-input--mono { font-family:var(--font-mono); letter-spacing:0.04em; }
       .kds-input::placeholder { color:var(--muted-2); }
-      .kds-input-wrap__addon { padding:0 14px; font-size:11px; color:var(--muted-2); border-left:1px solid var(--line); align-self:stretch; display:grid; place-items:center; }
       .kds-btn { appearance:none; border:0; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:14px 22px; border-radius:var(--r-md); font-size:15px; font-weight:500; transition:transform .15s,background .2s; }
       .kds-btn:active { transform:translateY(1px); }
       .kds-btn--primary { background:var(--kavak-blue); color:#fff; }
@@ -128,24 +123,6 @@ function InjectStyles() {
       .kds-helper { display:flex; gap:12px; align-items:flex-start; padding:14px 16px; background:var(--kavak-blue-hint); border:1px solid var(--kavak-blue-edge); border-radius:var(--r-md); font-size:13px; line-height:1.5; color:var(--kavak-blue-ink); }
       .kds-helper__icon { flex-shrink:0; margin-top:1px; color:var(--kavak-blue); }
       .kds-status-strip { display:flex; align-items:center; gap:16px; padding-top:16px; font-size:13px; color:var(--muted); border-top:1px solid var(--line); }
-      .kds-preview { position:relative; background:#0A0B14; color:#fff; padding:56px; display:flex; flex-direction:column; gap:24px; overflow:hidden; }
-      .kds-preview::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 15% 0%,color-mix(in oklab,var(--kavak-blue) 35%,transparent),transparent 50%),radial-gradient(circle at 100% 100%,color-mix(in oklab,var(--kavak-blue) 28%,transparent),transparent 45%); pointer-events:none; }
-      .kds-preview > * { position:relative; z-index:1; }
-      .kds-preview__eyebrow { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(255,255,255,.55); }
-      .kds-preview__title { font-family:var(--font-display); font-weight:500; font-size:32px; line-height:1.08; letter-spacing:-0.03em; margin:0; max-width:400px; }
-      .kds-case-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:var(--r-lg); padding:22px; }
-      .kds-case-card__head { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:rgba(255,255,255,.55); letter-spacing:0.06em; text-transform:uppercase; }
-      .kds-timeline { list-style:none; margin:20px 0 0; padding:0; display:flex; flex-direction:column; gap:12px; }
-      .kds-timeline li { display:grid; grid-template-columns:22px 1fr auto; align-items:center; gap:12px; font-size:13px; }
-      .kds-ti-dot { width:10px; height:10px; border-radius:999px; border:2px solid rgba(255,255,255,.25); justify-self:center; }
-      .kds-timeline .is-done .kds-ti-dot { background:var(--kavak-blue); border-color:var(--kavak-blue); }
-      .kds-timeline .is-now .kds-ti-dot { background:#6EE7A8; border-color:#6EE7A8; box-shadow:0 0 0 4px rgba(110,231,168,.18); }
-      .kds-ti-time { font-size:12px; color:rgba(255,255,255,.45); }
-      .kds-sso { display:flex; gap:10px; }
-      .kds-sso__btn { flex:1; display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:13px; border-radius:var(--r-md); border:1px solid var(--line); background:var(--paper); font-size:13px; font-weight:500; color:var(--ink-3); cursor:pointer; }
-      .kds-sso__btn:hover { border-color:var(--ink); }
-      .kds-divider-or { display:flex; align-items:center; gap:12px; color:var(--muted-2); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; }
-      .kds-divider-or::before,.kds-divider-or::after { content:""; flex:1; height:1px; background:var(--line); }
       .kds-shake { animation:kds-shake .35s; }
       @keyframes kds-shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }
       .kds-fade-in { animation:kds-fadeIn .4s cubic-bezier(.2,.7,.2,1) both; }
@@ -156,7 +133,6 @@ function InjectStyles() {
         .kds-hero__copy{padding:40px 24px}
         .kds-subscreen{grid-template-columns:1fr}
         .kds-subscreen__panel{padding:40px 24px;max-width:100%}
-        .kds-preview{display:none}
         .kds-topbar{padding:0 24px}
         .kds-trust{padding:16px 24px}
         .kds-choices{grid-template-columns:1fr}
@@ -223,10 +199,19 @@ const IconEyeOff = () => (
     <path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7c1.6 0 3-.3 4.3-.8"/>
   </svg>
 );
+const IconPhone = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.08 6.08l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </svg>
+);
+const IconCheck = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 6L9 17l-5-5"/>
+  </svg>
+);
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
 const PANEL_PASSWORD = import.meta.env.VITE_PANEL_PASSWORD || "";
 
 const ESTADO_MAP = {
@@ -258,22 +243,18 @@ const ESTADOS = {
   Listo:       { label: "Listo",       color: "#1D9E75", bg: "#E1F5EE", text: "#085041", border: "#1D9E7530" },
 };
 
-const KAVAK_BLUE = "#0066FF";
-const KAVAK_BLUE_DARK = "#0052CC";
+const KAVAK_BLUE       = "#0066FF";
+const KAVAK_BLUE_DARK  = "#0052CC";
 const KAVAK_BLUE_LIGHT = "#E5F0FF";
 
-
-// ── Kavak Logo ────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────
 
 function KavakLogo({ dark = false, small = false }) {
   return (
     <span style={{
       fontFamily: "'Arial Black', 'Arial Bold', Arial, sans-serif",
-      fontWeight: 900,
-      fontSize: small ? 14 : 20,
-      letterSpacing: 1,
-      color: dark ? "#0066FF" : "#ffffff",
-      lineHeight: 1,
+      fontWeight: 900, fontSize: small ? 14 : 20,
+      letterSpacing: 1, color: dark ? "#0066FF" : "#ffffff", lineHeight: 1,
     }}>KAVAK</span>
   );
 }
@@ -309,23 +290,19 @@ function haceHoras(fecha) {
   return (Date.now() - new Date(fecha).getTime()) / (1000 * 60 * 60);
 }
 
-// ── Ubicacion mapper ──────────────────────────────────────────────
-
 function formatUbicacion(ubicacion) {
   if (!ubicacion) return null;
   const u = ubicacion.toUpperCase().trim();
   if (u.includes("DEPOT")) return "Kavak Schiappacasse";
-  if (u.includes("MBI")) return "Kavak Mall Barrio Independencia";
+  if (u.includes("MBI"))   return "Kavak Mall Barrio Independencia";
   return ubicacion;
 }
-
-// ── Site normalizer ───────────────────────────────────────────────
 
 function normalizarSite(ubicacion) {
   if (!ubicacion) return null;
   const u = ubicacion.toUpperCase().trim();
   if (u.includes("DEPOT")) return "DEPOT";
-  if (u.includes("MBI")) return "MBI";
+  if (u.includes("MBI"))   return "MBI";
   return u;
 }
 
@@ -344,35 +321,29 @@ function supabaseFetch(path, options = {}) {
 }
 
 async function getCasos() {
-  const res = await supabaseFetch("bbdd_cc_activos?order=fecha_ingreso.desc", {});
+  const res = await supabaseFetch("bbdd_cc_activos?order=fecha_ingreso.desc");
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 async function getComentarios() {
-  const res = await supabaseFetch("comentarios?order=created_at.desc", {});
+  const res = await supabaseFetch("comentarios?order=created_at.desc");
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 async function addComentario(data) {
-  const res = await supabaseFetch("comentarios", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  const res = await supabaseFetch("comentarios", { method: "POST", body: JSON.stringify(data) });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 function filtrarProcesoReciente(todos) {
   if (!todos.length) return [];
-
-  const maxId = Math.max(...todos.map(f => f.id_sistema));
+  const maxId   = Math.max(...todos.map(f => f.id_sistema));
   const proceso = todos.filter(f => f.id_sistema === maxId);
-
   const validos = proceso.filter(f => f.fecha_ingreso || f.fecha_listo);
-  const base = validos.length > 0 ? validos : proceso;
-
+  const base    = validos.length > 0 ? validos : proceso;
   const ordenado = [...base].sort((a, b) => {
     if (!a.fecha_ingreso && !b.fecha_ingreso) return 0;
     if (!a.fecha_ingreso) return -1;
@@ -382,51 +353,36 @@ function filtrarProcesoReciente(todos) {
     return da - db;
   });
   const ultimoRegistro = ordenado[ordenado.length - 1];
-  const final = ordenado.filter(f => {
+  return ordenado.filter(f => {
     const esEntregado = f.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE";
     if (esEntregado && !f.fecha_listo && f !== ultimoRegistro) return false;
     return true;
   });
-
-  return final;
 }
 
 async function getHistorialByNumero(numero) {
   const res = await supabaseFetch(`bbdd_cc?numero_caso=eq.${encodeURIComponent(numero)}&order=id_sistema.asc,fecha_ingreso.asc.nullslast,hora_ingreso.asc.nullslast`);
   if (!res.ok) throw new Error(await res.text());
-  const todos = await res.json();
-  return filtrarProcesoReciente(todos);
+  return filtrarProcesoReciente(await res.json());
 }
 
 async function getHistorialByPatente(patente) {
   const res = await supabaseFetch(`bbdd_cc?patente=eq.${encodeURIComponent(patente.toUpperCase())}&order=id_sistema.asc,fecha_ingreso.asc.nullslast,hora_ingreso.asc.nullslast`);
   if (!res.ok) throw new Error(await res.text());
-  const todos = await res.json();
-  return filtrarProcesoReciente(todos);
+  return filtrarProcesoReciente(await res.json());
 }
 
 async function registrarConsulta(busqueda, tipo, numero_caso, patente) {
   try {
     await supabaseFetch("consultas_cliente", {
       method: "POST",
-      body: JSON.stringify({
-        busqueda,
-        tipo,
-        numero_caso: numero_caso || null,
-        patente: patente || null,
-        created_at: new Date().toISOString(),
-      }),
+      body: JSON.stringify({ busqueda, tipo, numero_caso: numero_caso || null, patente: patente || null, created_at: new Date().toISOString() }),
     });
-  } catch (e) {
-    console.warn("No se pudo registrar consulta:", e.message);
-  }
+  } catch (e) { console.warn("No se pudo registrar consulta:", e.message); }
 }
 
 async function saveFeedback(data) {
-  const res = await supabaseFetch("feedback_cliente", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  const res = await supabaseFetch("feedback_cliente", { method: "POST", body: JSON.stringify(data) });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -437,43 +393,55 @@ async function getComentariosByCaso(numero) {
   return res.json();
 }
 
+// ── API Solicitudes de contacto ───────────────────────────────────
+
+async function crearSolicitudContacto(data) {
+  const res = await supabaseFetch("solicitudes_contacto", { method: "POST", body: JSON.stringify(data) });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function getSolicitudesPendientes() {
+  const res = await supabaseFetch("solicitudes_contacto?estado=eq.pendiente&order=created_at.asc");
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function marcarContactado(id, contactado_por) {
+  const res = await supabaseFetch(`solicitudes_contacto?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ estado: "contactado", contactado_at: new Date().toISOString(), contactado_por }),
+    prefer: "return=representation",
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 // ── UI base ───────────────────────────────────────────────────────
 
 function Badge({ principal }) {
   const cfg = ESTADOS[principal];
   if (!cfg) return null;
   return (
-    <span style={{
-      background: cfg.bg, color: cfg.text,
-      border: `1px solid ${cfg.border}`,
-      borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500,
-    }}>{cfg.label}</span>
+    <span style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 500 }}>
+      {cfg.label}
+    </span>
   );
 }
 
 function SubBadge({ subestado, principal }) {
   const cfg = ESTADOS[principal] || {};
   return (
-    <span style={{
-      background: cfg.bg || "#f1efe8", color: cfg.text || "#444",
-      border: `1px solid ${cfg.border || "#88888830"}`,
-      borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 500,
-    }}>{subestado}</span>
+    <span style={{ background: cfg.bg || "#f1efe8", color: cfg.text || "#444", border: `1px solid ${cfg.border || "#88888830"}`, borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 500 }}>
+      {subestado}
+    </span>
   );
 }
 
 function Modal({ title, onClose, children }) {
   return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000,
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: "#fff", borderRadius: 16, padding: "28px 32px",
-        minWidth: 420, maxWidth: 560, width: "90vw",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
-        maxHeight: "85vh", overflowY: "auto",
-      }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, padding: "28px 32px", minWidth: 420, maxWidth: 560, width: "90vw", boxShadow: "0 8px 40px rgba(0,0,0,0.15)", maxHeight: "85vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>{title}</h2>
           <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 22, color: "#aaa" }}>✕</button>
@@ -484,12 +452,12 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-// ── Pantalla de inicio ────────────────────────────────────────────
+// ── TopBar ────────────────────────────────────────────────────────
 
 function TopBar({ onLogo }) {
   return (
     <header className="kds-topbar">
-      <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
         <a className="kds-brandmark" href="#" onClick={e => { e.preventDefault(); onLogo?.(); }}>KAVAK</a>
         <span className="kds-brand-pill">Portal · Sigue tu caso</span>
       </div>
@@ -497,9 +465,11 @@ function TopBar({ onLogo }) {
   );
 }
 
+// ── Pantalla de inicio ────────────────────────────────────────────
+
 function PantallaInicio({ onCliente, onInterno }) {
   return (
-    <div style={{ display:"flex", flexDirection:"column", minHeight:"100vh", background:"var(--paper)", fontFamily:"var(--font-display)" }}>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--paper)", fontFamily: "var(--font-display)" }}>
       <InjectStyles />
       <TopBar />
       <div className="kds-hero kds-fade-in">
@@ -543,7 +513,7 @@ function PantallaInicio({ onCliente, onInterno }) {
           <div className="kds-hero__veil" />
           <div className="kds-ticker">
             <span>Centro de servicio · Santiago</span>
-            <span><span className="kds-dot" style={{marginRight:6}} />En operación</span>
+            <span><span className="kds-dot" style={{ marginRight: 6 }} />En operación</span>
           </div>
           <div className="kds-media-caption">
             <div>
@@ -568,12 +538,12 @@ function PantallaInicio({ onCliente, onInterno }) {
 // ── Login internos ────────────────────────────────────────────────
 
 function LoginInterno({ onLogin, onVolver }) {
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [err, setErr]           = useState("");
+  const [email, setEmail]           = useState("");
+  const [password, setPassword]     = useState("");
+  const [showPass, setShowPass]     = useState(false);
+  const [err, setErr]               = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [shake, setShake]       = useState(false);
+  const [shake, setShake]           = useState(false);
 
   function handleLogin() {
     if (!email.trim()) { triggerShake("Ingresa tu correo"); return; }
@@ -589,7 +559,7 @@ function LoginInterno({ onLogin, onVolver }) {
   }
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", minHeight:"100vh", background:"var(--paper)", fontFamily:"var(--font-display)" }}>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--paper)", fontFamily: "var(--font-display)" }}>
       <InjectStyles />
       <TopBar onLogo={onVolver} />
       <div className="kds-subscreen kds-fade-in">
@@ -597,10 +567,10 @@ function LoginInterno({ onLogin, onVolver }) {
           <button className="kds-back-btn" onClick={onVolver}><ArrowLeft /> Volver al inicio</button>
           <div>
             <span className="kds-eyebrow">Equipo interno</span>
-            <h1 className="kds-subscreen__title" style={{marginTop:12}}>Panel de<br />post-venta<span style={{color:"var(--kavak-blue)"}}>.</span></h1>
-            <p className="kds-subscreen__sub" style={{marginTop:16}}>Accede al panel de gestión para revisar casos, asignar tareas y actualizar el estado de los vehículos en proceso.</p>
+            <h1 className="kds-subscreen__title" style={{ marginTop: 12 }}>Panel de<br />post-venta<span style={{ color: "var(--kavak-blue)" }}>.</span></h1>
+            <p className="kds-subscreen__sub" style={{ marginTop: 16 }}>Accede al panel de gestión para revisar casos, asignar tareas y actualizar el estado de los vehículos en proceso.</p>
           </div>
-          <div style={{display:"flex", flexDirection:"column", gap:16}}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div className="kds-field">
               <label className="kds-field__label"><span>Correo</span><small>@kavak.com</small></label>
               <div className={`kds-input-wrap${shake ? " is-error kds-shake" : ""}`}>
@@ -615,14 +585,14 @@ function LoginInterno({ onLogin, onVolver }) {
                 <span className="kds-input-wrap__icon"><IconLock /></span>
                 <input className="kds-input" type={showPass ? "text" : "password"} placeholder="••••••••" value={password}
                   onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} autoComplete="current-password" />
-                <button type="button" onClick={() => setShowPass(s => !s)} style={{background:"transparent",border:0,padding:"0 16px",color:"var(--muted)",cursor:"pointer",display:"grid",placeItems:"center",height:"100%"}}>
+                <button type="button" onClick={() => setShowPass(s => !s)} style={{ background: "transparent", border: 0, padding: "0 16px", color: "var(--muted)", cursor: "pointer", display: "grid", placeItems: "center", height: "100%" }}>
                   {showPass ? <IconEyeOff /> : <IconEye />}
                 </button>
               </div>
             </div>
             {err && (
-              <div className="kds-helper" style={{background:"#FEECEC",borderColor:"#F8C9CA",color:"#9F1F23"}}>
-                <span className="kds-helper__icon" style={{color:"#E5484D"}}><IconInfo /></span>
+              <div className="kds-helper" style={{ background: "#FEECEC", borderColor: "#F8C9CA", color: "#9F1F23" }}>
+                <span className="kds-helper__icon" style={{ color: "#E5484D" }}><IconInfo /></span>
                 <div>{err}</div>
               </div>
             )}
@@ -635,11 +605,11 @@ function LoginInterno({ onLogin, onVolver }) {
           </div>
         </section>
         <aside style={{
-          position:"relative", overflow:"hidden",
-          backgroundImage:"url('https://elcomercio.pe/resizer/v2/CXTCJBTRVVHDNNNYKVW5AQDJGM.jpg?auth=02ab52d09ae8637b6d7de6cc064a0dd018ac69e5aba678c85f94ffcbc17d0f57&width=980&height=551&quality=75&smart=true')",
-          backgroundSize:"cover", backgroundPosition:"center",
+          position: "relative", overflow: "hidden",
+          backgroundImage: "url('https://elcomercio.pe/resizer/v2/CXTCJBTRVVHDNNNYKVW5AQDJGM.jpg?auth=02ab52d09ae8637b6d7de6cc064a0dd018ac69e5aba678c85f94ffcbc17d0f57&width=980&height=551&quality=75&smart=true')",
+          backgroundSize: "cover", backgroundPosition: "center",
         }}>
-          <div style={{position:"absolute",inset:0,background:"rgba(10,11,20,0.45)"}} />
+          <div style={{ position: "absolute", inset: 0, background: "rgba(10,11,20,0.45)" }} />
         </aside>
       </div>
     </div>
@@ -649,7 +619,6 @@ function LoginInterno({ onLogin, onVolver }) {
 // ── Modal comentario ──────────────────────────────────────────────
 
 function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
-  const { subestado, principal } = getMapped(caso.estado_operativo);
   const [estadoComentario, setEstadoComentario] = useState(caso.estado_operativo?.toUpperCase().trim() || "DIAGNÓSTICO");
   const [comentario, setComentario] = useState("");
   const [creadoPor, setCreadoPor]   = useState(defaultUser);
@@ -661,42 +630,24 @@ function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
     setSaving(true); setErr("");
     try {
       await addComentario({
-        numero_caso: caso.numero_caso,
-        patente: caso.patente,
-        estado: estadoComentario,
-        comentario: comentario.trim(),
-        creado_por: creadoPor.trim() || "Sin nombre",
-        created_at: new Date().toISOString(),
+        numero_caso: caso.numero_caso, patente: caso.patente,
+        estado: estadoComentario, comentario: comentario.trim(),
+        creado_por: creadoPor.trim() || "Sin nombre", created_at: new Date().toISOString(),
       });
-      onSave();
-      onClose();
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setSaving(false);
-    }
+      onSave(); onClose();
+    } catch (e) { setErr(e.message); } finally { setSaving(false); }
   }
 
-  const inputStyle = {
-    width: "100%", padding: "9px 12px", borderRadius: 8,
-    border: "1px solid #e0e0e0", background: "#fafafa",
-    color: "#1a1a1a", fontSize: 14, boxSizing: "border-box",
-  };
+  const inputStyle = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #e0e0e0", background: "#fafafa", color: "#1a1a1a", fontSize: 14, boxSizing: "border-box" };
 
   return (
     <div>
       <div style={{ background: "#f8f7f4", borderRadius: 10, padding: "12px 14px", marginBottom: 16 }}>
-        <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
-          Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong>
-        </p>
+        <p style={{ margin: 0, fontSize: 13, color: "#666" }}>Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong></p>
         <div style={{ marginTop: 6 }}><SubBadge subestado={getMapped(estadoComentario).subestado} principal={getMapped(estadoComentario).principal} /></div>
       </div>
       <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>Estado</label>
-      <select
-        style={{ ...inputStyle, marginBottom: 4 }}
-        value={estadoComentario}
-        onChange={e => setEstadoComentario(e.target.value)}
-      >
+      <select style={{ ...inputStyle, marginBottom: 4 }} value={estadoComentario} onChange={e => setEstadoComentario(e.target.value)}>
         {Object.keys(ESTADO_MAP).filter(k => k !== "PENDIENTE").map(k => (
           <option key={k} value={k}>{ESTADO_MAP[k].subestado}</option>
         ))}
@@ -707,14 +658,8 @@ function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
       <textarea style={{ ...inputStyle, minHeight: 90, resize: "vertical" }} value={comentario} onChange={e => setComentario(e.target.value)} placeholder="Describe el estado actual del vehículo..." />
       {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 6 }}>{err}</p>}
       <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-        <button onClick={handleSave} disabled={saving} style={{
-          flex: 1, padding: "10px 0", borderRadius: 8, border: "none",
-          background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14,
-        }}>{saving ? "Guardando..." : "Guardar comentario"}</button>
-        <button onClick={onClose} style={{
-          flex: 1, padding: "10px 0", borderRadius: 8,
-          border: "1px solid #e0e0e0", background: "transparent", color: "#555", cursor: "pointer", fontSize: 14,
-        }}>Cancelar</button>
+        <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: "10px 0", borderRadius: 8, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>{saving ? "Guardando..." : "Guardar comentario"}</button>
+        <button onClick={onClose} style={{ flex: 1, padding: "10px 0", borderRadius: 8, border: "1px solid #e0e0e0", background: "transparent", color: "#555", cursor: "pointer", fontSize: 14 }}>Cancelar</button>
       </div>
     </div>
   );
@@ -725,9 +670,7 @@ function ModalComentario({ caso, onSave, onClose, defaultUser = "" }) {
 function ModalHistorial({ caso, comentariosDeCaso, onClose }) {
   return (
     <div>
-      <p style={{ margin: "0 0 16px", fontSize: 13, color: "#666" }}>
-        Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong>
-      </p>
+      <p style={{ margin: "0 0 16px", fontSize: 13, color: "#666" }}>Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong></p>
       {comentariosDeCaso.length === 0
         ? <p style={{ color: "#aaa", textAlign: "center", padding: "24px 0" }}>Sin comentarios aún</p>
         : (
@@ -736,11 +679,7 @@ function ModalHistorial({ caso, comentariosDeCaso, onClose }) {
               const { subestado, principal } = getMapped(c.estado);
               const cfg = ESTADOS[principal] || {};
               return (
-                <div key={c.id} style={{
-                  borderLeft: `3px solid ${c.es_general ? KAVAK_BLUE : (cfg.color || "#888")}`,
-                  background: c.es_general ? KAVAK_BLUE_LIGHT : "#f8f7f4",
-                  borderRadius: "0 8px 8px 0", padding: "10px 14px",
-                }}>
+                <div key={c.id} style={{ borderLeft: `3px solid ${c.es_general ? KAVAK_BLUE : (cfg.color || "#888")}`, background: c.es_general ? KAVAK_BLUE_LIGHT : "#f8f7f4", borderRadius: "0 8px 8px 0", padding: "10px 14px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                     {c.es_general
                       ? <span style={{ background: KAVAK_BLUE_LIGHT, color: KAVAK_BLUE, border: `1px solid ${KAVAK_BLUE}30`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 500 }}>📝 Nota general</span>
@@ -756,15 +695,127 @@ function ModalHistorial({ caso, comentariosDeCaso, onClose }) {
           </div>
         )
       }
-      <button onClick={onClose} style={{
-        marginTop: 18, width: "100%", padding: "10px 0", borderRadius: 8,
-        border: "1px solid #e0e0e0", background: "transparent", color: "#555", cursor: "pointer", fontSize: 14,
-      }}>Cerrar</button>
+      <button onClick={onClose} style={{ marginTop: 18, width: "100%", padding: "10px 0", borderRadius: 8, border: "1px solid #e0e0e0", background: "transparent", color: "#555", cursor: "pointer", fontSize: 14 }}>Cerrar</button>
     </div>
   );
 }
 
-// ── Tarjeta de caso ───────────────────────────────────────────────
+// ── Modal Nota General ────────────────────────────────────────────
+
+function ModalNotaGeneral({ caso, onSave, onClose, defaultUser = "" }) {
+  const [nota, setNota]           = useState("");
+  const [creadoPor, setCreadoPor] = useState(defaultUser);
+  const [saving, setSaving]       = useState(false);
+  const [err, setErr]             = useState("");
+
+  async function handleSave() {
+    if (!nota.trim()) { setErr("La nota no puede estar vacía"); return; }
+    setSaving(true); setErr("");
+    try {
+      await addComentario({
+        numero_caso: caso.numero_caso, patente: caso.patente,
+        estado: null, comentario: nota.trim(),
+        creado_por: creadoPor.trim() || "Sin nombre",
+        es_general: true, created_at: new Date().toISOString(),
+      });
+      onSave(); onClose();
+    } catch (e) { setErr(e.message); } finally { setSaving(false); }
+  }
+
+  const inputStyle = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #e0e0e0", background: "#fafafa", color: "#1a1a1a", fontSize: 14, boxSizing: "border-box" };
+
+  return (
+    <div>
+      <div style={{ background: "#f8f7f4", borderRadius: 10, padding: "12px 14px", marginBottom: 16 }}>
+        <p style={{ margin: 0, fontSize: 13, color: "#666" }}>Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong></p>
+        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#aaa" }}>Esta nota es visible para el cliente en "Última actualización del equipo"</p>
+      </div>
+      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>Tu nombre</label>
+      <input style={inputStyle} value={creadoPor} onChange={e => setCreadoPor(e.target.value)} placeholder="Ej: Juan Pérez" />
+      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4, marginTop: 12 }}>Nota general *</label>
+      <textarea style={{ ...inputStyle, minHeight: 90, resize: "vertical" }} value={nota} onChange={e => setNota(e.target.value)} placeholder="Ej: El cliente fue contactado, esperando confirmación de retiro..." />
+      {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 6 }}>{err}</p>}
+      <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+        <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: "10px 0", borderRadius: 8, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>{saving ? "Guardando..." : "Guardar nota"}</button>
+        <button onClick={onClose} style={{ flex: 1, padding: "10px 0", borderRadius: 8, border: "1px solid #e0e0e0", background: "transparent", color: "#555", cursor: "pointer", fontSize: 14 }}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal Necesito Contacto (cliente) ─────────────────────────────
+
+function ModalNecesitoContacto({ caso, onClose }) {
+  const [mensaje, setMensaje] = useState("");
+  const [paso, setPaso]       = useState(1); // 1: form, 2: confirmado
+  const [saving, setSaving]   = useState(false);
+  const [err, setErr]         = useState("");
+
+  async function handleEnviar() {
+    setSaving(true); setErr("");
+    try {
+      await crearSolicitudContacto({
+        numero_caso: caso.numero_caso,
+        patente: caso.patente,
+        mensaje: mensaje.trim() || null,
+        estado: "pendiente",
+        created_at: new Date().toISOString(),
+      });
+      setPaso(2);
+    } catch (e) {
+      setErr("No se pudo enviar. Intenta de nuevo.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 16 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, padding: "32px 28px", maxWidth: 420, width: "100%", boxShadow: "0 12px 48px rgba(0,0,0,0.18)", textAlign: "center" }}>
+        {paso === 2 ? (
+          <>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#E1F5EE", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 26 }}>✅</div>
+            <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>¡Solicitud enviada!</h2>
+            <p style={{ margin: "0 0 24px", fontSize: 14, color: "#888", lineHeight: 1.5 }}>
+              El equipo de Kavak se pondrá en contacto contigo a la brevedad para resolver tus dudas.
+            </p>
+            <button onClick={onClose} style={{ padding: "11px 32px", borderRadius: 10, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>
+              Cerrar
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: KAVAK_BLUE_LIGHT, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <IconPhone />
+            </div>
+            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>Necesito contactarme</h2>
+            <p style={{ margin: "0 0 20px", fontSize: 13, color: "#888", lineHeight: 1.5 }}>
+              Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong><br />
+              El equipo de post-venta se comunicará contigo a la brevedad.
+            </p>
+            <textarea
+              style={{ width: "100%", minHeight: 90, padding: "10px 12px", borderRadius: 10, border: "1px solid #e0e0e0", background: "#fafafa", fontSize: 14, color: "#1a1a1a", resize: "vertical", boxSizing: "border-box", outline: "none", marginBottom: 6, textAlign: "left" }}
+              placeholder="Opcional: cuéntanos brevemente tu consulta o duda..."
+              value={mensaje}
+              onChange={e => setMensaje(e.target.value)}
+            />
+            {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "0 0 10px" }}>{err}</p>}
+            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+              <button onClick={handleEnviar} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: saving ? "wait" : "pointer", fontSize: 14 }}>
+                {saving ? "Enviando..." : "Enviar solicitud"}
+              </button>
+              <button onClick={onClose} style={{ padding: "11px 16px", borderRadius: 10, border: "1px solid #e0e0e0", background: "transparent", color: "#aaa", cursor: "pointer", fontSize: 13 }}>
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Tarjeta de caso (panel interno) ──────────────────────────────
 
 function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral, onVerHistorial, alerta, colorBorde }) {
   const { principal, subestado } = getMapped(caso.estado_operativo);
@@ -774,12 +825,7 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
   const bgCard = colorBorde ? cfg.bg + "55" : "#fff";
 
   return (
-    <div style={{
-      background: bgCard,
-      border: `1px solid ${colorBorde ? cfg.border : alerta === "advertencia" ? "#E24B4A30" : "#ececec"}`,
-      borderLeft: `4px solid ${borderColor}`,
-      borderRadius: 12, padding: "14px 16px",
-    }}>
+    <div style={{ background: bgCard, border: `1px solid ${colorBorde ? cfg.border : alerta === "advertencia" ? "#E24B4A30" : "#ececec"}`, borderLeft: `4px solid ${borderColor}`, borderRadius: 12, padding: "14px 16px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
@@ -788,50 +834,24 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
             <span style={{ fontSize: 13, color: "#999" }}>Caso #{caso.numero_caso}</span>
             <Badge principal={principal} />
             <SubBadge subestado={subestado} principal={principal} />
-            {alerta === "urgente" && (
-              <span style={{ background: "#FAEEDA", color: "#633806", border: "1px solid #EF9F2740", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500 }}>
-                ⏰ Actualizar comentario
-              </span>
-            )}
-            {alerta === "advertencia" && (
-              <span style={{ background: "#FCEBEB", color: "#A32D2D", border: "1px solid #E24B4A40", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500 }}>
-                ⚠ Sin comentario +72h
-              </span>
-            )}
+            {alerta === "urgente" && <span style={{ background: "#FAEEDA", color: "#633806", border: "1px solid #EF9F2740", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500 }}>⏰ Actualizar comentario</span>}
+            {alerta === "advertencia" && <span style={{ background: "#FCEBEB", color: "#A32D2D", border: "1px solid #E24B4A40", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 500 }}>⚠ Sin comentario +72h</span>}
           </div>
           <div style={{ display: "flex", gap: 16, marginBottom: 6, flexWrap: "wrap" }}>
-            {caso.fecha_ingreso && (
-              <span style={{ fontSize: 12, color: "#aaa" }}>📅 Ingreso: {formatFechaHora(caso.fecha_ingreso, caso.hora_ingreso)}</span>
-            )}
-            {caso.fecha_listo && (
-              <span style={{ fontSize: 12, color: "#aaa" }}>✅ Listo: {formatFechaHora(caso.fecha_listo, caso.hora_listo)}</span>
-            )}
-            {caso.ubicacion && (
-              <span style={{ fontSize: 12, color: "#aaa" }}>📍 {formatUbicacion(caso.ubicacion)}</span>
-            )}
+            {caso.fecha_ingreso && <span style={{ fontSize: 12, color: "#aaa" }}>📅 Ingreso: {formatFechaHora(caso.fecha_ingreso, caso.hora_ingreso)}</span>}
+            {caso.fecha_listo   && <span style={{ fontSize: 12, color: "#aaa" }}>✅ Listo: {formatFechaHora(caso.fecha_listo, caso.hora_listo)}</span>}
+            {caso.ubicacion     && <span style={{ fontSize: 12, color: "#aaa" }}>📍 {formatUbicacion(caso.ubicacion)}</span>}
           </div>
           {ultimoComentario
-            ? <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
-                💬 {ultimoComentario.comentario}
-                <span style={{ color: "#ccc", marginLeft: 6, fontSize: 11 }}>{formatDate(ultimoComentario.created_at)}</span>
-              </p>
+            ? <p style={{ margin: 0, fontSize: 13, color: "#666" }}>💬 {ultimoComentario.comentario}<span style={{ color: "#ccc", marginLeft: 6, fontSize: 11 }}>{formatDate(ultimoComentario.created_at)}</span></p>
             : <p style={{ margin: 0, fontSize: 13, color: "#ddd", fontStyle: "italic" }}>Sin comentarios</p>
           }
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-          <button onClick={() => onAgregarComentario(caso)} style={{
-            padding: "6px 12px", borderRadius: 7, border: "none",
-            background: KAVAK_BLUE, color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 500,
-          }}>+ Comentario</button>
-          <button onClick={() => onNotaGeneral(caso)} style={{
-            padding: "6px 12px", borderRadius: 7, border: "none",
-            background: "#f0f0f0", color: "#555", cursor: "pointer", fontSize: 12, fontWeight: 500,
-          }}>📝 Nota general</button>
+          <button onClick={() => onAgregarComentario(caso)} style={{ padding: "6px 12px", borderRadius: 7, border: "none", background: KAVAK_BLUE, color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 500 }}>+ Comentario</button>
+          <button onClick={() => onNotaGeneral(caso)} style={{ padding: "6px 12px", borderRadius: 7, border: "none", background: "#f0f0f0", color: "#555", cursor: "pointer", fontSize: 12, fontWeight: 500 }}>📝 Nota general</button>
           {comentariosDeCaso.length > 0 && (
-            <button onClick={() => onVerHistorial(caso)} style={{
-              padding: "6px 12px", borderRadius: 7, border: "1px solid #e0e0e0",
-              background: "transparent", cursor: "pointer", fontSize: 12, color: "#777",
-            }}>Historial ({comentariosDeCaso.length})</button>
+            <button onClick={() => onVerHistorial(caso)} style={{ padding: "6px 12px", borderRadius: 7, border: "1px solid #e0e0e0", background: "transparent", cursor: "pointer", fontSize: 12, color: "#777" }}>Historial ({comentariosDeCaso.length})</button>
           )}
         </div>
       </div>
@@ -839,126 +859,11 @@ function CasoCard({ caso, comentariosDeCaso, onAgregarComentario, onNotaGeneral,
   );
 }
 
-// ── Modal Nota General ───────────────────────────────────────────
-
-function ModalNotaGeneral({ caso, onSave, onClose, defaultUser = "" }) {
-  const [nota, setNota]         = useState("");
-  const [creadoPor, setCreadoPor] = useState(defaultUser);
-  const [saving, setSaving]     = useState(false);
-  const [err, setErr]           = useState("");
-
-  async function handleSave() {
-    if (!nota.trim()) { setErr("La nota no puede estar vacía"); return; }
-    setSaving(true); setErr("");
-    try {
-      await addComentario({
-        numero_caso: caso.numero_caso,
-        patente: caso.patente,
-        estado: null,
-        comentario: nota.trim(),
-        creado_por: creadoPor.trim() || "Sin nombre",
-        es_general: true,
-        created_at: new Date().toISOString(),
-      });
-      onSave();
-      onClose();
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const inputStyle = {
-    width: "100%", padding: "9px 12px", borderRadius: 8,
-    border: "1px solid #e0e0e0", background: "#fafafa",
-    color: "#1a1a1a", fontSize: 14, boxSizing: "border-box",
-  };
-
-  return (
-    <div>
-      <div style={{ background: "#f8f7f4", borderRadius: 10, padding: "12px 14px", marginBottom: 16 }}>
-        <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
-          Caso <strong>#{caso.numero_caso}</strong> · Patente <strong>{caso.patente}</strong>
-        </p>
-        <p style={{ margin: "4px 0 0", fontSize: 12, color: "#aaa" }}>
-          Esta nota es visible para el cliente en "Última actualización del equipo"
-        </p>
-      </div>
-      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4 }}>Tu nombre</label>
-      <input style={inputStyle} value={creadoPor} onChange={e => setCreadoPor(e.target.value)} placeholder="Ej: Juan Pérez" />
-      <label style={{ fontSize: 13, color: "#666", display: "block", marginBottom: 4, marginTop: 12 }}>Nota general *</label>
-      <textarea
-        style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
-        value={nota}
-        onChange={e => setNota(e.target.value)}
-        placeholder="Ej: El cliente fue contactado, esperando confirmación de retiro..."
-      />
-      {err && <p style={{ color: "#c0392b", fontSize: 13, marginTop: 6 }}>{err}</p>}
-      <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-        <button onClick={handleSave} disabled={saving} style={{
-          flex: 1, padding: "10px 0", borderRadius: 8, border: "none",
-          background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14,
-        }}>{saving ? "Guardando..." : "Guardar nota"}</button>
-        <button onClick={onClose} style={{
-          flex: 1, padding: "10px 0", borderRadius: 8,
-          border: "1px solid #e0e0e0", background: "transparent", color: "#555", cursor: "pointer", fontSize: 14,
-        }}>Cancelar</button>
-      </div>
-    </div>
-  );
-}
-
-// ── Tab Pendientes ────────────────────────────────────────────────
-
-function TabPendientes({ casos, comentariosMap, onAgregarComentario, onNotaGeneral, onVerHistorial, onRefresh }) {
-  const pendientes = casos.filter(c => {
-    if (c.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE") return false;
-    const comentariosDeCaso = comentariosMap[c.numero_caso] || [];
-    const ultimo = comentariosDeCaso[0];
-    return !ultimo || ultimo.estado?.toUpperCase().trim() !== c.estado_operativo?.toUpperCase().trim();
-  });
-
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Pendientes</h2>
-          <p style={{ margin: "2px 0 0", fontSize: 13, color: "#888" }}>
-            Casos con cambio de estado sin comentario — {pendientes.length} caso{pendientes.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <button onClick={onRefresh} style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid #e0e0e0", background: "transparent", cursor: "pointer", fontSize: 13, color: "#555" }}>
-          ↻ Actualizar
-        </button>
-      </div>
-      {pendientes.length === 0
-        ? <div style={{ textAlign: "center", padding: "48px 0", color: "#ccc" }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>🎉</div>
-            <p style={{ margin: 0, fontSize: 15 }}>No hay casos pendientes</p>
-          </div>
-        : <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {pendientes.map(c => {
-              const comentariosDeCaso = comentariosMap[c.numero_caso] || [];
-              const ultimo = comentariosDeCaso[0];
-              const alerta = haceHoras(ultimo?.created_at) >= 72 ? "advertencia" : "urgente";
-              return (
-                <CasoCard key={c.id_sistema} caso={c} comentariosDeCaso={comentariosDeCaso}
-                  onAgregarComentario={onAgregarComentario} onNotaGeneral={onNotaGeneral} onVerHistorial={onVerHistorial}
-                  alerta={alerta} colorBorde={false} />
-              );
-            })}
-          </div>
-      }
-    </div>
-  );
-}
-
 // ── Tab Backlog ───────────────────────────────────────────────────
 
 function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral, onVerHistorial, onRefresh }) {
-  const [filtro, setFiltro] = useState("Todos");
-  const [filtroSite, setFiltroSite] = useState("Todos");
+  const [filtro, setFiltro]             = useState("Todos");
+  const [filtroSite, setFiltroSite]     = useState("Todos");
   const [busquedaCaso, setBusquedaCaso] = useState("");
   const [busquedaPatente, setBusquedaPatente] = useState("");
 
@@ -979,7 +884,6 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
     conteos[principal] = (conteos[principal] || 0) + 1;
   });
 
-  // Conteos por site para los botones
   const conteosSite = { DEPOT: 0, MBI: 0 };
   casos.forEach(c => {
     if (c.estado_operativo?.toUpperCase().trim() === "ENTREGADO A CLIENTE") return;
@@ -992,13 +896,12 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
 
   const SITES = [
     { key: "Todos", label: "Todos los sites" },
-    { key: "DEPOT", label: "📍 Schiappacasse", count: conteosSite.DEPOT },
-    { key: "MBI",   label: "📍 Mall B. Independencia", count: conteosSite.MBI },
+    { key: "DEPOT", label: "📍 Schiappacasse",         count: conteosSite.DEPOT },
+    { key: "MBI",   label: "📍 Mall B. Independencia", count: conteosSite.MBI  },
   ];
 
   return (
     <div>
-      {/* Métricas */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
         {[
           { label: "Total activos", value: casos.filter(c => c.estado_operativo?.toUpperCase().trim() !== "ENTREGADO A CLIENTE").length, color: KAVAK_BLUE, bg: KAVAK_BLUE_LIGHT },
@@ -1013,44 +916,29 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
         ))}
       </div>
 
-      {/* Filtro de site — botones tipo pill */}
+      {/* Filtro site */}
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
         <span style={{ fontSize: 12, color: "#aaa", fontWeight: 500, marginRight: 4 }}>Site:</span>
         {SITES.map(s => (
-          <button
-            key={s.key}
-            onClick={() => setFiltroSite(s.key)}
-            style={{
-              padding: "6px 14px",
-              borderRadius: 20,
-              border: filtroSite === s.key ? `1.5px solid ${KAVAK_BLUE}` : "1px solid #e0e0e0",
-              background: filtroSite === s.key ? KAVAK_BLUE_LIGHT : "#fafafa",
-              color: filtroSite === s.key ? KAVAK_BLUE : "#555",
-              fontWeight: filtroSite === s.key ? 600 : 400,
-              cursor: "pointer",
-              fontSize: 13,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              transition: "all 0.15s",
-            }}
-          >
+          <button key={s.key} onClick={() => setFiltroSite(s.key)} style={{
+            padding: "6px 14px", borderRadius: 20,
+            border: filtroSite === s.key ? `1.5px solid ${KAVAK_BLUE}` : "1px solid #e0e0e0",
+            background: filtroSite === s.key ? KAVAK_BLUE_LIGHT : "#fafafa",
+            color: filtroSite === s.key ? KAVAK_BLUE : "#555",
+            fontWeight: filtroSite === s.key ? 600 : 400,
+            cursor: "pointer", fontSize: 13,
+            display: "inline-flex", alignItems: "center", gap: 6, transition: "all 0.15s",
+          }}>
             {s.label}
             {s.count !== undefined && (
-              <span style={{
-                background: filtroSite === s.key ? KAVAK_BLUE : "#e8e8e8",
-                color: filtroSite === s.key ? "#fff" : "#777",
-                borderRadius: 10,
-                padding: "1px 7px",
-                fontSize: 11,
-                fontWeight: 600,
-              }}>{s.count}</span>
+              <span style={{ background: filtroSite === s.key ? KAVAK_BLUE : "#e8e8e8", color: filtroSite === s.key ? "#fff" : "#777", borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: 600 }}>
+                {s.count}
+              </span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Barra de búsqueda y filtro de estado */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
         <p style={{ margin: 0, fontSize: 13, color: "#aaa" }}>{backlog.length} resultado{backlog.length !== 1 ? "s" : ""}</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1079,12 +967,88 @@ function TabBacklog({ casos, comentariosMap, onAgregarComentario, onNotaGeneral,
   );
 }
 
+// ── Tab Pendientes de Contacto ────────────────────────────────────
+
+function TabPendientesContacto({ solicitudes, onMarcarContactado, onRefresh, loading }) {
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Pendientes de contacto</h2>
+          <p style={{ margin: "2px 0 0", fontSize: 13, color: "#888" }}>
+            Clientes que solicitaron ser contactados — {solicitudes.length} pendiente{solicitudes.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <button onClick={onRefresh} style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid #e0e0e0", background: "transparent", cursor: "pointer", fontSize: 13, color: "#555" }}>
+          ↻ Actualizar
+        </button>
+      </div>
+
+      {loading && <p style={{ color: "#bbb", fontSize: 13, textAlign: "center", padding: "24px 0" }}>Cargando...</p>}
+
+      {!loading && solicitudes.length === 0 && (
+        <div style={{ textAlign: "center", padding: "48px 0", color: "#ccc" }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>📭</div>
+          <p style={{ margin: 0, fontSize: 15 }}>No hay solicitudes pendientes</p>
+          <p style={{ margin: "6px 0 0", fontSize: 13 }}>Cuando un cliente presione "Necesito contactarme" aparecerá aquí</p>
+        </div>
+      )}
+
+      {!loading && solicitudes.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {solicitudes.map(s => (
+            <div key={s.id} style={{
+              background: "#fff",
+              border: "1px solid #e0e0e0",
+              borderLeft: `4px solid ${KAVAK_BLUE}`,
+              borderRadius: 12, padding: "14px 16px",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>{s.patente}</span>
+                    <span style={{ fontSize: 13, color: "#ccc" }}>·</span>
+                    <span style={{ fontSize: 13, color: "#999" }}>Caso #{s.numero_caso}</span>
+                    <span style={{ background: KAVAK_BLUE_LIGHT, color: KAVAK_BLUE, border: `1px solid ${KAVAK_BLUE}30`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600 }}>
+                      📞 Solicitud de contacto
+                    </span>
+                  </div>
+                  <p style={{ margin: "0 0 4px", fontSize: 12, color: "#bbb" }}>
+                    🕐 {formatDate(s.created_at)}
+                  </p>
+                  {s.mensaje
+                    ? <div style={{ background: "#f8f9fa", borderRadius: 8, padding: "8px 12px", marginTop: 6 }}>
+                        <p style={{ margin: 0, fontSize: 13, color: "#444" }}>💬 {s.mensaje}</p>
+                      </div>
+                    : <p style={{ margin: "4px 0 0", fontSize: 13, color: "#ccc", fontStyle: "italic" }}>Sin mensaje adicional</p>
+                  }
+                </div>
+                <button
+                  onClick={() => onMarcarContactado(s)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "8px 14px", borderRadius: 8, border: "none",
+                    background: "#E1F5EE", color: "#085041",
+                    fontWeight: 600, cursor: "pointer", fontSize: 12,
+                    flexShrink: 0, whiteSpace: "nowrap",
+                  }}
+                >
+                  <IconCheck /> Marcar contactado
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Progreso cliente ──────────────────────────────────────────────
 
 function ProgresoCliente({ historico, comentarios = [] }) {
   const casoActual  = historico[historico.length - 1];
   const ordenActual = getOrden(casoActual?.estado_operativo?.toUpperCase().trim());
-
   const nk = (k) => k === "PENDIENTE" ? "PENDIENTE DE DIAGNÓSTICO" : k;
 
   const filasPorEstado = {};
@@ -1119,116 +1083,66 @@ function ProgresoCliente({ historico, comentarios = [] }) {
     { key: "Listo",       label: "Listo",       subestados: SUBESTADOS_ORDEN.filter(s => s.principal === "Listo")       },
   ];
 
-  const DC = {
-    Diagnostico: "#E24B4A",
-    EnTrabajo:   "#EF9F27",
-    Listo:       "#1D9E75",
-  };
+  const DC = { Diagnostico: "#E24B4A", EnTrabajo: "#EF9F27", Listo: "#1D9E75" };
 
   return (
     <div style={{ margin: "8px 0" }}>
       {grupos.map((grupo, gi) => {
         const cfg = ESTADOS[grupo.key];
-        const dotColor = DC[grupo.key];
+        const dotColor      = DC[grupo.key];
         const grupoActivo   = grupo.subestados.some(s => getOrden(s.key) <= ordenActual);
         const grupoCompleto = grupo.subestados.every(s => getOrden(s.key) < ordenActual);
 
         return (
           <div key={grupo.key} style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${grupoActivo ? cfg.border : "#f0f0f0"}` }}>
-              <div style={{
-                width: 22, height: 22, borderRadius: "50%",
-                background: grupoActivo ? cfg.color : "#f0f0f0",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 10, fontWeight: 700, color: grupoActivo ? "#fff" : "#ccc", flexShrink: 0,
-              }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: grupoActivo ? cfg.color : "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: grupoActivo ? "#fff" : "#ccc", flexShrink: 0 }}>
                 {grupoCompleto ? "✓" : gi + 1}
               </div>
               <span style={{ fontWeight: 700, fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: grupoActivo ? cfg.text : "#ccc" }}>{grupo.label}</span>
               {grupoCompleto && (
-                <span style={{ marginLeft: "auto", background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "1px 10px", fontSize: 11, fontWeight: 500 }}>
-                  Completado ✓
-                </span>
+                <span style={{ marginLeft: "auto", background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "1px 10px", fontSize: 11, fontWeight: 500 }}>Completado ✓</span>
               )}
             </div>
-
             <div style={{ display: "flex", flexDirection: "column" }}>
               {grupo.subestados.map((s, si) => {
-                const ordenS     = getOrden(s.key);
-                const completado = ordenS < ordenActual;
-                const activo     = ordenS === ordenActual;
-                const key        = nk(s.key);
+                const ordenS       = getOrden(s.key);
+                const completado   = ordenS < ordenActual;
+                const activo       = ordenS === ordenActual;
+                const key          = nk(s.key);
                 const existeEnHist = !!filasPorEstado[key];
                 const tieneAbierta = existeEnHist && filasPorEstado[key].some(f => !f.fecha_listo);
-                const llegóAListo = ordenActual >= 6;
-                const retroced   = !llegóAListo && !completado && !activo && existeEnHist && !tieneAbierta;
-                const tieneInfo  = completado || activo || retroced;
+                const llegóAListo  = ordenActual >= 6;
+                const retroced     = !llegóAListo && !completado && !activo && existeEnHist && !tieneAbierta;
+                const tieneInfo    = completado || activo || retroced;
                 const { filaInicio, filaFin } = getFechas(key);
-                const inicioStr  = filaInicio ? formatFechaHora(filaInicio.fecha_ingreso, filaInicio.hora_ingreso) : null;
-                const listoStr   = filaFin    ? formatFechaHora(filaFin.fecha_listo, filaFin.hora_listo) : null;
-                const isLast     = si === grupo.subestados.length - 1;
+                const inicioStr    = filaInicio ? formatFechaHora(filaInicio.fecha_ingreso, filaInicio.hora_ingreso) : null;
+                const listoStr     = filaFin    ? formatFechaHora(filaFin.fecha_listo, filaFin.hora_listo) : null;
+                const isLast       = si === grupo.subestados.length - 1;
 
                 return (
                   <div key={s.key} style={{ display: "flex", gap: 0 }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 28, flexShrink: 0 }}>
-                      <div style={{
-                        width: 12, height: 12, borderRadius: "50%", marginTop: 13, flexShrink: 0,
-                        background: completado ? dotColor : activo ? "#6EE7A8" : "#e8e8e8",
-                        border: activo ? "none" : completado ? "none" : "2px solid #d0d0d0",
-                        boxShadow: activo ? `0 0 0 4px rgba(110,231,168,.2)` : "none",
-                      }} />
-                      {!isLast && (
-                        <div style={{ width: 2, flex: 1, minHeight: 14, background: completado ? dotColor + "60" : "#e8e8e8", marginTop: 3 }} />
-                      )}
+                      <div style={{ width: 12, height: 12, borderRadius: "50%", marginTop: 13, flexShrink: 0, background: completado ? dotColor : activo ? "#6EE7A8" : "#e8e8e8", border: activo ? "none" : completado ? "none" : "2px solid #d0d0d0", boxShadow: activo ? `0 0 0 4px rgba(110,231,168,.2)` : "none" }} />
+                      {!isLast && <div style={{ width: 2, flex: 1, minHeight: 14, background: completado ? dotColor + "60" : "#e8e8e8", marginTop: 3 }} />}
                     </div>
-
                     <div style={{ flex: 1, paddingBottom: isLast ? 4 : 12, paddingLeft: 10, paddingTop: 10 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{
-                          fontSize: 14, fontWeight: activo ? 600 : completado ? 500 : 400,
-                          color: activo ? "#1a1a1a" : completado ? "#555" : "#bbb",
-                          flex: 1,
-                        }}>{s.label}</span>
-                        {activo && (
-                          <span style={{ background: cfg.color, color: "#fff", borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600 }}>
-                            Estado actual
-                          </span>
-                        )}
-                        {completado && (
-                          <span style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 500 }}>
-                            Completado ✓
-                          </span>
-                        )}
-                        {retroced && (
-                          <span style={{ background: "#f5f5f5", color: "#999", border: "1px solid #e8e8e8", borderRadius: 20, padding: "2px 10px", fontSize: 11 }}>
-                            ↩ Retrocedido
-                          </span>
-                        )}
+                        <span style={{ fontSize: 14, fontWeight: activo ? 600 : completado ? 500 : 400, color: activo ? "#1a1a1a" : completado ? "#555" : "#bbb", flex: 1 }}>{s.label}</span>
+                        {activo    && <span style={{ background: cfg.color, color: "#fff", borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600 }}>Estado actual</span>}
+                        {completado && <span style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 500 }}>Completado ✓</span>}
+                        {retroced  && <span style={{ background: "#f5f5f5", color: "#999", border: "1px solid #e8e8e8", borderRadius: 20, padding: "2px 10px", fontSize: 11 }}>↩ Retrocedido</span>}
                       </div>
-
                       {tieneInfo && (inicioStr || listoStr) && (
                         <div style={{ display: "flex", gap: 12, marginTop: 4, flexWrap: "wrap" }}>
-                          {inicioStr && (
-                            <span style={{ fontSize: 12, color: retroced ? "#ccc" : "#888", textDecoration: retroced ? "line-through" : "none" }}>
-                              {inicioStr}
-                            </span>
-                          )}
-                          {listoStr && inicioStr !== listoStr && (
-                            <span style={{ fontSize: 12, color: retroced ? "#ccc" : "#aaa", textDecoration: retroced ? "line-through" : "none" }}>
-                              → {listoStr}
-                            </span>
-                          )}
+                          {inicioStr && <span style={{ fontSize: 12, color: retroced ? "#ccc" : "#888", textDecoration: retroced ? "line-through" : "none" }}>{inicioStr}</span>}
+                          {listoStr && inicioStr !== listoStr && <span style={{ fontSize: 12, color: retroced ? "#ccc" : "#aaa", textDecoration: retroced ? "line-through" : "none" }}>→ {listoStr}</span>}
                         </div>
                       )}
-
                       {tieneInfo && comentMap[s.key] && comentMap[s.key].length > 0 && (
                         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
                           {comentMap[s.key].map(c => (
-                            <div key={c.id} style={{
-                              background: "#fafafa", border: `1px solid ${cfg.border}`,
-                              borderLeft: `3px solid ${cfg.color}`,
-                              borderRadius: "0 8px 8px 0", padding: "8px 12px",
-                            }}>
+                            <div key={c.id} style={{ background: "#fafafa", border: `1px solid ${cfg.border}`, borderLeft: `3px solid ${cfg.color}`, borderRadius: "0 8px 8px 0", padding: "8px 12px" }}>
                               <p style={{ margin: "0 0 3px", fontSize: 13, color: "#333" }}>💬 {c.comentario}</p>
                               <p style={{ margin: 0, fontSize: 11, color: "#bbb" }}>{formatDate(c.created_at)}</p>
                             </div>
@@ -1247,7 +1161,7 @@ function ProgresoCliente({ historico, comentarios = [] }) {
   );
 }
 
-// ── Modal Feedback ───────────────────────────────────────────────
+// ── Modal Feedback ────────────────────────────────────────────────
 
 function ModalFeedback({ caso, onClose }) {
   const [puntuacion, setPuntuacion] = useState(0);
@@ -1261,140 +1175,53 @@ function ModalFeedback({ caso, onClose }) {
     if (puntuacion === 0) { setErr("Por favor selecciona una puntuación"); return; }
     setSaving(true); setErr("");
     try {
-      await saveFeedback({
-        numero_caso: caso.numero_caso,
-        patente: caso.patente,
-        puntuacion,
-        sugerencia: sugerencia.trim() || null,
-      });
+      await saveFeedback({ numero_caso: caso.numero_caso, patente: caso.patente, puntuacion, sugerencia: sugerencia.trim() || null });
       setPaso(3);
-    } catch (e) {
-      setErr("No se pudo guardar. Intenta de nuevo.");
-    } finally {
-      setSaving(false);
-    }
+    } catch (e) { setErr("No se pudo guardar. Intenta de nuevo."); } finally { setSaving(false); }
   }
 
-  const estrellaLabels = ["", "Muy malo", "Malo", "Regular", "Bueno", "Excelente"];
-  const estrellasColor = puntuacion >= 4 ? "#1D9E75" : puntuacion === 3 ? "#EF9F27" : puntuacion > 0 ? "#E24B4A" : "#ccc";
+  const estrellaLabels  = ["", "Muy malo", "Malo", "Regular", "Bueno", "Excelente"];
+  const estrellasColor  = puntuacion >= 4 ? "#1D9E75" : puntuacion === 3 ? "#EF9F27" : puntuacion > 0 ? "#E24B4A" : "#ccc";
 
   return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 2000, padding: 16,
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: "#fff", borderRadius: 20, padding: "32px 28px",
-        maxWidth: 420, width: "100%",
-        boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
-        textAlign: "center",
-      }}>
-
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, padding: 16 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, padding: "32px 28px", maxWidth: 420, width: "100%", boxShadow: "0 12px 48px rgba(0,0,0,0.18)", textAlign: "center" }}>
         {paso === 3 ? (
           <>
             <div style={{ fontSize: 52, marginBottom: 12 }}>🎉</div>
-            <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>
-              ¡Gracias por tu opinión!
-            </h2>
-            <p style={{ margin: "0 0 24px", fontSize: 14, color: "#888" }}>
-              Tu feedback nos ayuda a mejorar la experiencia para todos los clientes Kavak.
-            </p>
-            <button onClick={onClose} style={{
-              padding: "10px 28px", borderRadius: 10, border: "none",
-              background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
-              cursor: "pointer", fontSize: 14,
-            }}>Cerrar</button>
+            <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700, color: "#1a1a1a" }}>¡Gracias por tu opinión!</h2>
+            <p style={{ margin: "0 0 24px", fontSize: 14, color: "#888" }}>Tu feedback nos ayuda a mejorar la experiencia para todos los clientes Kavak.</p>
+            <button onClick={onClose} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Cerrar</button>
           </>
         ) : paso === 1 ? (
           <>
-            <div style={{
-              background: KAVAK_BLUE, borderRadius: 14, padding: "8px 20px",
-              display: "inline-block", marginBottom: 16,
-            }}>
+            <div style={{ background: KAVAK_BLUE, borderRadius: 14, padding: "8px 20px", display: "inline-block", marginBottom: 16 }}>
               <KavakLogo dark={false} small />
             </div>
-            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>
-              ¿Cómo fue tu experiencia?
-            </h2>
-            <p style={{ margin: "0 0 24px", fontSize: 13, color: "#888" }}>
-              Califica del 1 al 5 qué tan útil te resultó esta herramienta de seguimiento
-            </p>
-
+            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>¿Cómo fue tu experiencia?</h2>
+            <p style={{ margin: "0 0 24px", fontSize: 13, color: "#888" }}>Califica del 1 al 5 qué tan útil te resultó esta herramienta de seguimiento</p>
             <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 10 }}>
               {[1, 2, 3, 4, 5].map(n => (
-                <button
-                  key={n}
-                  onClick={() => setPuntuacion(n)}
-                  onMouseEnter={() => setHover(n)}
-                  onMouseLeave={() => setHover(0)}
-                  style={{
-                    background: "none", border: "none", cursor: "pointer",
-                    fontSize: 40, padding: "2px 4px",
-                    transform: (hover || puntuacion) >= n ? "scale(1.15)" : "scale(1)",
-                    transition: "transform 0.1s",
-                    filter: (hover || puntuacion) >= n ? "none" : "grayscale(1) opacity(0.3)",
-                  }}
-                >⭐</button>
+                <button key={n} onClick={() => setPuntuacion(n)} onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 40, padding: "2px 4px", transform: (hover || puntuacion) >= n ? "scale(1.15)" : "scale(1)", transition: "transform 0.1s", filter: (hover || puntuacion) >= n ? "none" : "grayscale(1) opacity(0.3)" }}>⭐</button>
               ))}
             </div>
-
-            {(hover > 0 || puntuacion > 0) && (
-              <p style={{ margin: "0 0 20px", fontSize: 13, fontWeight: 600, color: estrellasColor }}>
-                {estrellaLabels[hover || puntuacion]}
-              </p>
-            )}
-
+            {(hover > 0 || puntuacion > 0) && <p style={{ margin: "0 0 20px", fontSize: 13, fontWeight: 600, color: estrellasColor }}>{estrellaLabels[hover || puntuacion]}</p>}
             {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "0 0 12px" }}>{err}</p>}
-
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => { if (puntuacion === 0) { setErr("Por favor selecciona una puntuación"); return; } setPaso(2); }} style={{
-                flex: 1, padding: "11px 0", borderRadius: 10, border: "none",
-                background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
-                cursor: "pointer", fontSize: 14,
-              }}>Continuar →</button>
-              <button onClick={onClose} style={{
-                padding: "11px 16px", borderRadius: 10,
-                border: "1px solid #e0e0e0", background: "transparent",
-                color: "#aaa", cursor: "pointer", fontSize: 13,
-              }}>Omitir</button>
+              <button onClick={() => { if (puntuacion === 0) { setErr("Por favor selecciona una puntuación"); return; } setPaso(2); }} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>Continuar →</button>
+              <button onClick={onClose} style={{ padding: "11px 16px", borderRadius: 10, border: "1px solid #e0e0e0", background: "transparent", color: "#aaa", cursor: "pointer", fontSize: 13 }}>Omitir</button>
             </div>
           </>
         ) : (
           <>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>
-              {["", "😞", "😕", "😐", "😊", "🤩"][puntuacion]}
-            </div>
-            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>
-              ¿Tienes alguna sugerencia?
-            </h2>
-            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#888" }}>
-              Cuéntanos cómo podríamos mejorar esta herramienta (opcional)
-            </p>
-            <textarea
-              style={{
-                width: "100%", minHeight: 100, padding: "10px 12px",
-                borderRadius: 10, border: "1px solid #e0e0e0",
-                background: "#fafafa", fontSize: 14, color: "#1a1a1a",
-                resize: "vertical", boxSizing: "border-box", outline: "none",
-                marginBottom: 16,
-              }}
-              placeholder="Ej: Me gustaría recibir notificaciones cuando cambie el estado..."
-              value={sugerencia}
-              onChange={e => setSugerencia(e.target.value)}
-            />
+            <div style={{ fontSize: 36, marginBottom: 12 }}>{["", "😞", "😕", "😐", "😊", "🤩"][puntuacion]}</div>
+            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#1a1a1a" }}>¿Tienes alguna sugerencia?</h2>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#888" }}>Cuéntanos cómo podríamos mejorar esta herramienta (opcional)</p>
+            <textarea style={{ width: "100%", minHeight: 100, padding: "10px 12px", borderRadius: 10, border: "1px solid #e0e0e0", background: "#fafafa", fontSize: 14, color: "#1a1a1a", resize: "vertical", boxSizing: "border-box", outline: "none", marginBottom: 16 }} placeholder="Ej: Me gustaría recibir notificaciones cuando cambie el estado..." value={sugerencia} onChange={e => setSugerencia(e.target.value)} />
             {err && <p style={{ color: "#c0392b", fontSize: 13, margin: "0 0 12px" }}>{err}</p>}
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={handleEnviar} disabled={saving} style={{
-                flex: 1, padding: "11px 0", borderRadius: 10, border: "none",
-                background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
-                cursor: saving ? "wait" : "pointer", fontSize: 14,
-              }}>{saving ? "Enviando..." : "Enviar feedback"}</button>
-              <button onClick={() => setPaso(1)} style={{
-                padding: "11px 16px", borderRadius: 10,
-                border: "1px solid #e0e0e0", background: "transparent",
-                color: "#aaa", cursor: "pointer", fontSize: 13,
-              }}>← Volver</button>
+              <button onClick={handleEnviar} disabled={saving} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: saving ? "wait" : "pointer", fontSize: 14 }}>{saving ? "Enviando..." : "Enviar feedback"}</button>
+              <button onClick={() => setPaso(1)} style={{ padding: "11px 16px", borderRadius: 10, border: "1px solid #e0e0e0", background: "transparent", color: "#aaa", cursor: "pointer", fontSize: 13 }}>← Volver</button>
             </div>
           </>
         )}
@@ -1406,15 +1233,15 @@ function ModalFeedback({ caso, onClose }) {
 // ── Portal Cliente ────────────────────────────────────────────────
 
 function PortalCliente({ onVolver, modoInterno = false }) {
-  const [busqueda, setBusqueda]       = useState("");
-  const [caso, setCaso]               = useState(null);
-  const [historico, setHistorico]     = useState([]);
-  const [comentarios, setComentarios] = useState([]);
-  const [loading, setLoading]         = useState(false);
-  const [err, setErr]                 = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-
-  const [shake, setShake] = useState(false);
+  const [busqueda, setBusqueda]           = useState("");
+  const [caso, setCaso]                   = useState(null);
+  const [historico, setHistorico]         = useState([]);
+  const [comentarios, setComentarios]     = useState([]);
+  const [loading, setLoading]             = useState(false);
+  const [err, setErr]                     = useState("");
+  const [showFeedback, setShowFeedback]   = useState(false);
+  const [showContacto, setShowContacto]   = useState(false);
+  const [shake, setShake]                 = useState(false);
 
   async function buscar() {
     const q = busqueda.trim();
@@ -1433,7 +1260,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
         const comms = await getComentariosByCaso(casoReciente.numero_caso);
         setComentarios(comms);
         if (!modoInterno) {
-          const tipo = /^\d+$/.test(q) ? 'numero_caso' : 'patente';
+          const tipo = /^\d+$/.test(q) ? "numero_caso" : "patente";
           await registrarConsulta(q, tipo, casoReciente.numero_caso, casoReciente.patente);
           const estadoActual = hist[hist.length - 1]?.estado_operativo?.toUpperCase().trim();
           if (estadoActual === "LISTO") setTimeout(() => setShowFeedback(true), 6000);
@@ -1448,14 +1275,14 @@ function PortalCliente({ onVolver, modoInterno = false }) {
 
   const mapped = caso ? getMapped(caso.estado_operativo) : null;
   const cfg    = mapped ? ESTADOS[mapped.principal] : null;
-
   const comentarioInicial = historico.find(h => h.comentario && h.comentario.trim() !== "")?.comentario || null;
 
   function triggerShake() { setShake(true); setTimeout(() => setShake(false), 400); }
 
+  // ── Vista búsqueda inicial (portal cliente real)
   if (!modoInterno && !caso) {
     return (
-      <div style={{display:"flex",flexDirection:"column",minHeight:"100vh",background:"var(--paper)",fontFamily:"var(--font-display)"}}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--paper)", fontFamily: "var(--font-display)" }}>
         <InjectStyles />
         <TopBar onLogo={onVolver} />
         <div className="kds-subscreen kds-fade-in">
@@ -1463,16 +1290,16 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             <button className="kds-back-btn" onClick={onVolver}><ArrowLeft /> Volver al inicio</button>
             <div>
               <span className="kds-eyebrow">Cliente</span>
-              <h1 className="kds-subscreen__title" style={{marginTop:12}}>Consulta<br />tu caso<span style={{color:"var(--kavak-blue)"}}>.</span></h1>
-              <p className="kds-subscreen__sub" style={{marginTop:16}}>Ingresa los datos de tu caso para ver el estado actualizado de tu vehículo y próximos pasos.</p>
+              <h1 className="kds-subscreen__title" style={{ marginTop: 12 }}>Consulta<br />tu caso<span style={{ color: "var(--kavak-blue)" }}>.</span></h1>
+              <p className="kds-subscreen__sub" style={{ marginTop: 16 }}>Ingresa los datos de tu caso para ver el estado actualizado de tu vehículo y próximos pasos.</p>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:20}}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <div className="kds-field">
                 <label className="kds-field__label">
                   <span>Número de caso o patente</span>
                   <small>Puedes ingresar cualquiera de los dos</small>
                 </label>
-                <div className={`kds-input-wrap${shake?" is-error kds-shake":""}`}>
+                <div className={`kds-input-wrap${shake ? " is-error kds-shake" : ""}`}>
                   <span className="kds-input-wrap__icon"><IconSearch /></span>
                   <input className="kds-input kds-input--mono"
                     placeholder="Ej: 727885 o LHHY81"
@@ -1484,14 +1311,13 @@ function PortalCliente({ onVolver, modoInterno = false }) {
                 </div>
               </div>
               {err && (
-                <div className="kds-helper" style={{background:"#FEECEC",borderColor:"#F8C9CA",color:"#9F1F23"}}>
-                  <span className="kds-helper__icon" style={{color:"#E5484D"}}><IconInfo /></span>
+                <div className="kds-helper" style={{ background: "#FEECEC", borderColor: "#F8C9CA", color: "#9F1F23" }}>
+                  <span className="kds-helper__icon" style={{ color: "#E5484D" }}><IconInfo /></span>
                   <div>{err}</div>
                 </div>
               )}
               <div className="kds-form-row">
-                <button className="kds-btn kds-btn--primary" disabled={loading || !busqueda.trim()}
-                  onClick={() => busqueda.trim() ? buscar() : triggerShake()}>
+                <button className="kds-btn kds-btn--primary" disabled={loading || !busqueda.trim()} onClick={() => busqueda.trim() ? buscar() : triggerShake()}>
                   {loading ? "Consultando…" : <><span>Consultar estado</span><ArrowRight /></>}
                 </button>
               </div>
@@ -1504,87 +1330,27 @@ function PortalCliente({ onVolver, modoInterno = false }) {
               </div>
             </div>
           </section>
-          <aside style={{
-            background:"#f8f9fa", display:"flex", flexDirection:"column",
-            padding:"48px 40px", overflowY:"auto",
-          }}>
-            <p style={{margin:"0 0 24px",fontSize:11,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase",color:"#aaa"}}>Vista previa · Portal cliente</p>
-
-            <div style={{
-              background:"#fff", borderRadius:16, border:"1px solid #ececec",
-              borderTop:"4px solid #EF9F27",
-              boxShadow:"0 4px 24px rgba(0,0,0,0.07)", padding:"24px", maxWidth:440,
-            }}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
+          <aside style={{ background: "#f8f9fa", display: "flex", flexDirection: "column", padding: "48px 40px", overflowY: "auto" }}>
+            <p style={{ margin: "0 0 24px", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#aaa" }}>Vista previa · Portal cliente</p>
+            <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ececec", borderTop: "4px solid #EF9F27", boxShadow: "0 4px 24px rgba(0,0,0,0.07)", padding: "24px", maxWidth: 440 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
                 <div>
-                  <p style={{margin:0,fontSize:11,color:"#bbb",textTransform:"uppercase",letterSpacing:0.8}}>Número de caso</p>
-                  <p style={{margin:"2px 0 0",fontSize:24,fontWeight:700}}>#000001</p>
+                  <p style={{ margin: 0, fontSize: 11, color: "#bbb", textTransform: "uppercase", letterSpacing: 0.8 }}>Número de caso</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 24, fontWeight: 700 }}>#000001</p>
                 </div>
-                <span style={{background:"#FAEEDA",color:"#633806",border:"1px solid #EF9F2730",borderRadius:20,padding:"3px 10px",fontSize:11,fontWeight:500}}>Trabajando</span>
+                <span style={{ background: "#FAEEDA", color: "#633806", border: "1px solid #EF9F2730", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 500 }}>Trabajando</span>
               </div>
-              <p style={{margin:"4px 0 0",fontSize:15,color:"#555",fontWeight:500}}>🚗 KAVA44</p>
-              <p style={{margin:"3px 0 0",fontSize:13,color:"#bbb"}}>📍 Kavak Schiappacasse</p>
-
-              <div style={{background:"#E5F0FF",border:"1px solid #0066FF20",borderLeft:"4px solid #0066FF",borderRadius:"0 10px 10px 0",padding:"12px 14px",marginTop:14}}>
-                <p style={{margin:"0 0 4px",fontSize:12,color:"#0066FF",fontWeight:600}}>📋 Solicitud inicial</p>
-                <p style={{margin:0,fontSize:13,color:"#333"}}>Reingreso por testigo de presión de aceite</p>
+              <p style={{ margin: "4px 0 0", fontSize: 15, color: "#555", fontWeight: 500 }}>🚗 KAVA44</p>
+              <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 Kavak Schiappacasse</p>
+              <div style={{ background: "#E5F0FF", border: "1px solid #0066FF20", borderLeft: "4px solid #0066FF", borderRadius: "0 10px 10px 0", padding: "12px 14px", marginTop: 14 }}>
+                <p style={{ margin: "0 0 4px", fontSize: 12, color: "#0066FF", fontWeight: 600 }}>📋 Solicitud inicial</p>
+                <p style={{ margin: 0, fontSize: 13, color: "#333" }}>Reingreso por testigo de presión de aceite</p>
               </div>
-
-              <div style={{borderTop:"1px solid #f0f0f0",paddingTop:16,marginTop:16}}>
-                <p style={{margin:"0 0 12px",fontSize:13,fontWeight:600,color:"#555"}}>Estado del proceso</p>
-
-                {[
-                  { label:"Diagnóstico", num:1, completado:true, color:"#E24B4A", text:"#A32D2D", bg:"#FCEBEB", border:"#E24B4A30", subestados:[
-                    {label:"Pendiente de diagnóstico",done:true,inicio:"14-05-2026 09:52",fin:"14-05-2026 12:36"},
-                    {label:"En diagnóstico",done:true,inicio:"14-05-2026 17:05",fin:"18-05-2026 08:40"},
-                  ]},
-                  { label:"En Trabajo", num:2, activo:true, color:"#EF9F27", text:"#633806", bg:"#FAEEDA", border:"#EF9F2730", subestados:[
-                    {label:"Espera de repuesto",done:true,inicio:"18-05-2026 08:40",fin:"18-05-2026 09:15"},
-                    {label:"Disponible para trabajo",done:true,inicio:"18-05-2026 09:15",fin:"18-05-2026 09:30"},
-                    {label:"Trabajando",now:true,inicio:"18-05-2026 08:40"},
-                    {label:"Prueba de ruta"},
-                  ]},
-                  { label:"Listo", num:3, color:"#1D9E75", text:"#085041", bg:"#E1F5EE", border:"#1D9E7530", subestados:[
-                    {label:"Listo para entregar"},
-                    {label:"Entregado a cliente"},
-                  ]},
-                ].map((grupo, gi) => (
-                  <div key={gi} style={{marginBottom:20}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${grupo.completado||grupo.activo?grupo.border:"#f0f0f0"}`}}>
-                      <div style={{width:22,height:22,borderRadius:"50%",background:grupo.completado||grupo.activo?grupo.color:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:grupo.completado||grupo.activo?"#fff":"#ccc",flexShrink:0}}>
-                        {grupo.completado?"✓":grupo.num}
-                      </div>
-                      <span style={{fontWeight:700,fontSize:12,letterSpacing:"0.08em",textTransform:"uppercase",color:grupo.completado||grupo.activo?grupo.text:"#ccc"}}>{grupo.label}</span>
-                      {grupo.completado && <span style={{marginLeft:"auto",background:grupo.bg,color:grupo.text,border:`1px solid ${grupo.border}`,borderRadius:20,padding:"1px 10px",fontSize:11,fontWeight:500}}>Completado ✓</span>}
-                    </div>
-                    {grupo.subestados.map((s,si) => (
-                      <div key={si} style={{display:"flex",gap:0}}>
-                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:28,flexShrink:0}}>
-                          <div style={{
-                            width:12,height:12,borderRadius:"50%",marginTop:13,flexShrink:0,
-                            background:s.done?grupo.color:s.now?"#6EE7A8":"#e8e8e8",
-                            boxShadow:s.now?"0 0 0 4px rgba(110,231,168,.2)":"none",
-                            border:(!s.done&&!s.now)?"2px solid #d0d0d0":"none",
-                          }}/>
-                          {si < grupo.subestados.length-1 && <div style={{width:2,flex:1,minHeight:14,background:s.done?grupo.color+"60":"#e8e8e8",marginTop:3}}/>}
-                        </div>
-                        <div style={{flex:1,paddingBottom:si===grupo.subestados.length-1?4:12,paddingLeft:10,paddingTop:10}}>
-                          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                            <span style={{fontSize:14,fontWeight:s.now?600:s.done?500:400,color:s.now?"#1a1a1a":s.done?"#555":"#bbb",flex:1}}>{s.label}</span>
-                            {s.now && <span style={{background:grupo.color,color:"#fff",borderRadius:20,padding:"2px 10px",fontSize:11,fontWeight:600}}>Estado actual</span>}
-                            {s.done && <span style={{background:grupo.bg,color:grupo.text,border:`1px solid ${grupo.border}`,borderRadius:20,padding:"2px 10px",fontSize:11,fontWeight:500}}>Completado ✓</span>}
-                          </div>
-                          {(s.done||s.now) && s.inicio && (
-                            <div style={{display:"flex",gap:12,marginTop:4,flexWrap:"wrap"}}>
-                              <span style={{fontSize:12,color:"#888"}}>{s.inicio}</span>
-                              {s.fin && <span style={{fontSize:12,color:"#aaa"}}>→ {s.fin}</span>}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+              {/* Botón de ejemplo en preview */}
+              <div style={{ marginTop: 16, borderTop: "1px solid #f0f0f0", paddingTop: 14 }}>
+                <button style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: `1.5px solid ${KAVAK_BLUE}`, background: "#fff", color: KAVAK_BLUE, fontWeight: 600, fontSize: 13, cursor: "default", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  <IconPhone /> Necesito contactarme
+                </button>
               </div>
             </div>
           </aside>
@@ -1593,14 +1359,9 @@ function PortalCliente({ onVolver, modoInterno = false }) {
     );
   }
 
+  // ── Vista resultado
   return (
-    <div style={{
-      minHeight: modoInterno ? "unset" : "100vh",
-      background: modoInterno ? "transparent" : "#f8f9fa",
-      display: "flex", flexDirection: "column", alignItems: "center",
-      padding: modoInterno ? "0" : "40px 16px 48px",
-      fontFamily: "var(--font-display)",
-    }}>
+    <div style={{ minHeight: modoInterno ? "unset" : "100vh", background: modoInterno ? "transparent" : "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", padding: modoInterno ? "0" : "40px 16px 48px", fontFamily: "var(--font-display)" }}>
       {!modoInterno && <InjectStyles />}
       {!modoInterno && <TopBar onLogo={() => { setCaso(null); setHistorico([]); }} />}
 
@@ -1612,11 +1373,9 @@ function PortalCliente({ onVolver, modoInterno = false }) {
           onChange={e => setBusqueda(e.target.value)}
           onKeyDown={e => e.key === "Enter" && buscar()}
         />
-        <button onClick={buscar} disabled={loading} style={{
-          padding: "12px 22px", borderRadius: 12, border: "none",
-          background: KAVAK_BLUE, color: "#fff", fontWeight: 600,
-          cursor: loading ? "wait" : "pointer", fontSize: 14,
-        }}>{loading ? "..." : "Buscar"}</button>
+        <button onClick={buscar} disabled={loading} style={{ padding: "12px 22px", borderRadius: 12, border: "none", background: KAVAK_BLUE, color: "#fff", fontWeight: 600, cursor: loading ? "wait" : "pointer", fontSize: 14 }}>
+          {loading ? "..." : "Buscar"}
+        </button>
       </div>
 
       {err && (
@@ -1626,12 +1385,7 @@ function PortalCliente({ onVolver, modoInterno = false }) {
       )}
 
       {caso && cfg && mapped && (
-        <div style={{
-          width: "100%", maxWidth: 480, background: "#fff",
-          borderRadius: 16, border: "1px solid #ececec",
-          borderTop: `4px solid ${cfg.color}`,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.07)", padding: "24px",
-        }}>
+        <div style={{ width: "100%", maxWidth: 480, background: "#fff", borderRadius: 16, border: "1px solid #ececec", borderTop: `4px solid ${cfg.color}`, boxShadow: "0 4px 24px rgba(0,0,0,0.07)", padding: "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
             <div>
               <p style={{ margin: 0, fontSize: 11, color: "#bbb", textTransform: "uppercase", letterSpacing: 0.8 }}>Número de caso</p>
@@ -1640,25 +1394,12 @@ function PortalCliente({ onVolver, modoInterno = false }) {
             <SubBadge subestado={mapped.subestado} principal={mapped.principal} />
           </div>
           <p style={{ margin: "4px 0 0", fontSize: 15, color: "#555", fontWeight: 500 }}>🚗 {caso.patente}</p>
-          {caso.ubicacion && (
-            <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 {formatUbicacion(caso.ubicacion)}</p>
-          )}
+          {caso.ubicacion && <p style={{ margin: "3px 0 0", fontSize: 13, color: "#bbb" }}>📍 {formatUbicacion(caso.ubicacion)}</p>}
 
           {comentarioInicial && (
-            <div style={{
-              background: KAVAK_BLUE_LIGHT,
-              border: `1px solid ${KAVAK_BLUE}20`,
-              borderLeft: `4px solid ${KAVAK_BLUE}`,
-              borderRadius: "0 10px 10px 0",
-              padding: "12px 14px",
-              marginTop: 14,
-            }}>
-              <p style={{ margin: "0 0 4px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>
-                📋 Solicitud inicial
-              </p>
-              <p style={{ margin: 0, fontSize: 14, color: "#333" }}>
-                {comentarioInicial}
-              </p>
+            <div style={{ background: KAVAK_BLUE_LIGHT, border: `1px solid ${KAVAK_BLUE}20`, borderLeft: `4px solid ${KAVAK_BLUE}`, borderRadius: "0 10px 10px 0", padding: "12px 14px", marginTop: 14 }}>
+              <p style={{ margin: "0 0 4px", fontSize: 12, color: KAVAK_BLUE, fontWeight: 600 }}>📋 Solicitud inicial</p>
+              <p style={{ margin: 0, fontSize: 14, color: "#333" }}>{comentarioInicial}</p>
             </div>
           )}
 
@@ -1677,36 +1418,42 @@ function PortalCliente({ onVolver, modoInterno = false }) {
               </div>
             ) : null;
           })()}
+
+          {/* ── Botón Necesito contactarme ── */}
+          {!modoInterno && (
+            <div style={{ marginTop: 16, borderTop: "1px solid #f0f0f0", paddingTop: 14 }}>
+              <button
+                onClick={() => setShowContacto(true)}
+                style={{
+                  width: "100%", padding: "11px 0", borderRadius: 10,
+                  border: `1.5px solid ${KAVAK_BLUE}`,
+                  background: "#fff", color: KAVAK_BLUE,
+                  fontWeight: 600, fontSize: 14, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = KAVAK_BLUE_LIGHT; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
+              >
+                <IconPhone /> Necesito contactarme
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {showFeedback && caso && (
-        <ModalFeedback caso={caso} onClose={() => setShowFeedback(false)} />
-      )}
+      {/* Modals */}
+      {showContacto && caso && <ModalNecesitoContacto caso={caso} onClose={() => setShowContacto(false)} />}
+      {showFeedback && caso && <ModalFeedback caso={caso} onClose={() => setShowFeedback(false)} />}
 
       {!modoInterno && (
         <>
-          <button
-            onClick={() => setShowFeedback(true)}
-            style={{
-              marginTop: 12,
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "#fff", color: KAVAK_BLUE,
-              border: `1px solid ${KAVAK_BLUE}40`,
-              borderRadius: 12, padding: "11px 22px",
-              fontWeight: 600, fontSize: 14,
-              cursor: "pointer",
-              transition: "transform 0.15s, box-shadow 0.15s",
-            }}
+          <button onClick={() => setShowFeedback(true)} style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: KAVAK_BLUE, border: `1px solid ${KAVAK_BLUE}40`, borderRadius: 12, padding: "11px 22px", fontWeight: 600, fontSize: 14, cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 4px 16px ${KAVAK_BLUE}20`; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
-          >
+            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
             ⭐ Evaluar herramienta de seguimiento
           </button>
-          <button onClick={onVolver} style={{
-            marginTop: 16, background: "none", border: "none", cursor: "pointer",
-            fontSize: 12, color: "#ccc", textDecoration: "underline",
-          }}>← Volver al inicio</button>
+          <button onClick={onVolver} style={{ marginTop: 16, background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "#ccc", textDecoration: "underline" }}>← Volver al inicio</button>
         </>
       )}
     </div>
@@ -1716,22 +1463,21 @@ function PortalCliente({ onVolver, modoInterno = false }) {
 // ── Panel Interno ─────────────────────────────────────────────────
 
 function PanelInterno({ onCerrarSesion, userEmail }) {
-  const [tab, setTab]                   = useState("backlog");
-  const [casos, setCasos]               = useState([]);
-  const [comentariosMap, setComentariosMap] = useState({});
-  const [loading, setLoading]           = useState(true);
-  const [errConn, setErrConn]           = useState("");
+  const [tab, setTab]                         = useState("backlog");
+  const [casos, setCasos]                     = useState([]);
+  const [comentariosMap, setComentariosMap]   = useState({});
+  const [solicitudes, setSolicitudes]         = useState([]);
+  const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
+  const [loading, setLoading]                 = useState(true);
+  const [errConn, setErrConn]                 = useState("");
   const [modalComentario, setModalComentario] = useState(null);
   const [modalNotaGeneral, setModalNotaGeneral] = useState(null);
   const [modalHistorial, setModalHistorial]   = useState(null);
 
-  const load = useCallback(async () => {
+  const loadCasos = useCallback(async () => {
     setLoading(true);
     try {
-      const [casosData, comentariosData] = await Promise.all([
-        getCasos(),
-        getComentarios(),
-      ]);
+      const [casosData, comentariosData] = await Promise.all([getCasos(), getComentarios()]);
       setCasos(casosData);
       const map = {};
       for (const c of comentariosData) {
@@ -1747,25 +1493,52 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  const loadSolicitudes = useCallback(async () => {
+    setLoadingSolicitudes(true);
+    try {
+      const data = await getSolicitudesPendientes();
+      setSolicitudes(data);
+    } catch (e) {
+      console.warn("Error cargando solicitudes:", e.message);
+    } finally {
+      setLoadingSolicitudes(false);
+    }
+  }, []);
+
+  useEffect(() => { loadCasos(); }, [loadCasos]);
+
+  // Cargar solicitudes al cambiar a esa pestaña
+  useEffect(() => {
+    if (tab === "contacto") loadSolicitudes();
+  }, [tab, loadSolicitudes]);
+
+  async function handleMarcarContactado(solicitud) {
+    try {
+      await marcarContactado(solicitud.id, userEmail || "Equipo Kavak");
+      setSolicitudes(prev => prev.filter(s => s.id !== solicitud.id));
+    } catch (e) {
+      alert("No se pudo actualizar: " + e.message);
+    }
+  }
+
+  const TABS = [
+    { key: "backlog",  label: "Backlog" },
+    { key: "contacto", label: "📞 Pendientes de contacto", badge: solicitudes.length > 0 && tab !== "contacto" ? solicitudes.length : null },
+    { key: "buscar",   label: "🔍 Buscar caso" },
+  ];
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa" }}>
-      <div style={{
-        background: "#fff", borderBottom: "1px solid #ececec",
-        padding: "0 24px", display: "flex", alignItems: "center",
-        position: "sticky", top: 0, zIndex: 100,
-      }}>
+      {/* Header */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #ececec", padding: "0 24px", display: "flex", alignItems: "center", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ padding: "14px 20px 14px 0", marginRight: 16, borderRight: "1px solid #ececec" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontFamily: "'Arial Black', Arial, sans-serif", fontWeight: 900, fontSize: 15, color: KAVAK_BLUE, letterSpacing: 1 }}>KAVAK</span>
             <span style={{ fontWeight: 600, fontSize: 14, color: "#1a1a1a" }}>· Sigue Tu Caso</span>
           </div>
         </div>
-        {[
-          { key: "backlog", label: "Backlog" },
-          { key: "buscar", label: "🔍 Buscar caso" },
-        ].map(t => (
+
+        {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{
             padding: "16px 18px", background: "none", border: "none", cursor: "pointer",
             fontSize: 14, fontWeight: tab === t.key ? 600 : 400,
@@ -1775,41 +1548,46 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
           }}>
             {t.label}
             {t.badge && (
-              <span style={{ background: "#FCEBEB", color: "#A32D2D", borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: 600 }}>
+              <span style={{ background: "#FEECEC", color: "#9F1F23", borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: 700 }}>
                 {t.badge}
               </span>
             )}
           </button>
         ))}
+
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
           {loading && <span style={{ fontSize: 12, color: "#bbb" }}>Cargando...</span>}
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: errConn ? "#E24B4A" : "#1D9E75" }} title={errConn || "Conectado"} />
-          {userEmail && (
-            <span style={{ fontSize: 12, color: "#aaa", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {userEmail}
-            </span>
-          )}
-          <button onClick={onCerrarSesion} style={{
-            fontSize: 12, color: "#E24B4A", background: "none", border: "1px solid #E24B4A40",
-            borderRadius: 6, padding: "4px 10px", cursor: "pointer",
-          }}>
+          {userEmail && <span style={{ fontSize: 12, color: "#aaa", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</span>}
+          <button onClick={onCerrarSesion} style={{ fontSize: 12, color: "#E24B4A", background: "none", border: "1px solid #E24B4A40", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
             Cerrar sesión
           </button>
         </div>
       </div>
 
+      {/* Contenido */}
       <div style={{ padding: "24px 20px", maxWidth: 960, margin: "0 auto" }}>
         {errConn && (
           <div style={{ background: "#FCEBEB", border: "1px solid #E24B4A40", borderRadius: 10, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#A32D2D" }}>
             ⚠ {errConn}
           </div>
         )}
+
         {tab === "backlog" && (
           <TabBacklog casos={casos} comentariosMap={comentariosMap}
             onAgregarComentario={c => setModalComentario(c)}
             onNotaGeneral={c => setModalNotaGeneral(c)}
             onVerHistorial={c => setModalHistorial(c)}
-            onRefresh={load} />
+            onRefresh={loadCasos} />
+        )}
+
+        {tab === "contacto" && (
+          <TabPendientesContacto
+            solicitudes={solicitudes}
+            onMarcarContactado={handleMarcarContactado}
+            onRefresh={loadSolicitudes}
+            loading={loadingSolicitudes}
+          />
         )}
 
         {tab === "buscar" && (
@@ -1823,14 +1601,15 @@ function PanelInterno({ onCerrarSesion, userEmail }) {
         )}
       </div>
 
+      {/* Modals */}
       {modalComentario && (
         <Modal title="Agregar comentario" onClose={() => setModalComentario(null)}>
-          <ModalComentario caso={modalComentario} onSave={load} onClose={() => setModalComentario(null)} defaultUser={userEmail} />
+          <ModalComentario caso={modalComentario} onSave={loadCasos} onClose={() => setModalComentario(null)} defaultUser={userEmail} />
         </Modal>
       )}
       {modalNotaGeneral && (
         <Modal title="📝 Nota general" onClose={() => setModalNotaGeneral(null)}>
-          <ModalNotaGeneral caso={modalNotaGeneral} onSave={load} onClose={() => setModalNotaGeneral(null)} defaultUser={userEmail} />
+          <ModalNotaGeneral caso={modalNotaGeneral} onSave={loadCasos} onClose={() => setModalNotaGeneral(null)} defaultUser={userEmail} />
         </Modal>
       )}
       {modalHistorial && (
@@ -1856,25 +1635,8 @@ export default function App() {
     }
   }, []);
 
-  if (vista === "inicio") return (
-    <PantallaInicio
-      onCliente={() => setVista("cliente")}
-      onInterno={() => setVista("login")}
-    />
-  );
-
-  if (vista === "cliente") return (
-    <PortalCliente onVolver={() => setVista("inicio")} />
-  );
-
-  if (vista === "login") return (
-    <LoginInterno
-      onLogin={(email) => { setUserEmail(email); setVista("interno"); }}
-      onVolver={() => setVista("inicio")}
-    />
-  );
-
-  if (vista === "interno") return (
-    <PanelInterno userEmail={userEmail} onCerrarSesion={() => { setUserEmail(""); setVista("inicio"); }} />
-  );
+  if (vista === "inicio") return <PantallaInicio onCliente={() => setVista("cliente")} onInterno={() => setVista("login")} />;
+  if (vista === "cliente") return <PortalCliente onVolver={() => setVista("inicio")} />;
+  if (vista === "login")   return <LoginInterno onLogin={(email) => { setUserEmail(email); setVista("interno"); }} onVolver={() => setVista("inicio")} />;
+  if (vista === "interno") return <PanelInterno userEmail={userEmail} onCerrarSesion={() => { setUserEmail(""); setVista("inicio"); }} />;
 }
