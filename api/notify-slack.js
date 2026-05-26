@@ -1,3 +1,12 @@
+// Mapa fijo email → Slack User ID
+const SLACK_USER_MAP = {
+  "luis.arrue@kavak.com":          "U038Q9CDJE4",
+  "sebastian.inzunza@kavak.com":   "U075V8RS5H8",
+  "hector.sanchezmunoz@kavak.com": "U098RKBM2NP",
+  "dustin.reyes@kavak.com":        "U0ALFB5T2A3",
+  "hugo.tapia1@kavak.com":         "U05UFQT796U",
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
@@ -6,22 +15,10 @@ export default async function handler(req, res) {
   const SLACK_TOKEN      = process.env.VITE_SLACK_TOKEN;
   const SLACK_CHANNEL_ID = process.env.VITE_SLACK_CHANNEL_ID;
 
-  // 1. Resolver Slack User ID desde el correo
-  let mencion = correo ? `_${correo}_` : "_sin asignar_";
-  if (correo) {
-    try {
-      const r = await fetch(
-        `https://slack.com/api/users.lookupByEmail?email=${encodeURIComponent(correo)}`,
-        { headers: { Authorization: `Bearer ${SLACK_TOKEN}` } }
-      );
-      const d = await r.json();
-      if (d.ok && d.user?.id) mencion = `<@${d.user.id}>`;
-    } catch (e) {
-      console.warn("Slack lookup error:", e.message);
-    }
-  }
+  // Resolver mención desde el mapa fijo
+  const slackId = correo ? SLACK_USER_MAP[correo.trim().toLowerCase()] : null;
+  const mencion = slackId ? `<@${slackId}>` : correo ? `_${correo}_` : "_sin asignar_";
 
-  // 2. Armar y enviar mensaje
   const texto =
     "🚨 *Un cliente quiere ser contactado — Sigue Tu Caso*\n\n" +
     `*Número caso:* ${numero_caso || "_sin dato_"}\n` +
