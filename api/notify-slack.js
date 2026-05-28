@@ -8,35 +8,161 @@ const SLACK_USER_MAP = {
 };
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
 
-  const { numero_caso, patente, mensaje, estado, correo } = req.body;
-
-  const SLACK_TOKEN      = process.env.VITE_SLACK_TOKEN;
-  const SLACK_CHANNEL_ID = process.env.VITE_SLACK_CHANNEL_ID;
-
-  // Resolver mención desde el mapa fijo
-  const slackId = correo ? SLACK_USER_MAP[correo.trim().toLowerCase()] : null;
-  const mencion = slackId ? `<@${slackId}>` : correo ? `_${correo}_` : "_sin asignar_";
-
-  const texto =
-    "🚨 *Un cliente quiere ser contactado — Sigue Tu Caso*\n\n" +
-    `*Número caso:* ${numero_caso || "_sin dato_"}\n` +
-    `*Patente:* ${patente || "_sin dato_"}\n` +
-    `*Mensaje:* ${mensaje || "_sin dato_"}\n` +
-    `*Estado:* ${estado || "_sin dato_"}\n` +
-    `*Fecha:* ${new Date().toLocaleString("es-CL")}\n` +
-    `*Responsable:* ${mencion}`;
+  // Solo permitir POST
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      ok: false,
+      error: "Método no permitido"
+    });
+  }
 
   try {
-    const r = await fetch("https://slack.com/api/chat.postMessage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${SLACK_TOKEN}` },
-      body: JSON.stringify({ channel: SLACK_CHANNEL_ID, text: texto }),
+
+    /*************************************************
+     * BODY
+     *************************************************/
+
+    const {
+      numero_caso,
+      patente,
+      mensaje,
+      estado,
+      correo
+    } = req.body;
+
+
+    /*************************************************
+     * ENV
+     *************************************************/
+
+    const SLACK_TOKEN =
+      process.env.VITE_SLACK_TOKEN;
+
+    const SLACK_CHANNEL_ID =
+      process.env.VITE_SLACK_CHANNEL_ID;
+
+
+    /*************************************************
+     * VALIDAR ENV
+     *************************************************/
+
+    if (!SLACK_TOKEN || !SLACK_CHANNEL_ID) {
+
+      return res.status(500).json({
+        ok: false,
+        error: "Faltan variables de entorno Slack"
+      });
+    }
+
+
+    /*************************************************
+     * RESOLVER RESPONSABLE
+     *************************************************/
+
+    const slackId = correo
+      ? SLACK_USER_MAP[
+          correo.trim().toLowerCase()
+        ]
+      : null;
+
+    const mencion = slackId
+      ? `<@${slackId}>`
+      : correo
+      ? `_${correo}_`
+      : "_sin asignar_";
+
+
+    /*************************************************
+     * FECHA CHILE
+     *************************************************/
+
+    const fechaChile = new Date().toLocaleString(
+      "es-CL",
+      {
+        timeZone: "America/Santiago",
+      }
+    );
+
+
+    /*************************************************
+     * MENSAJE SLACK
+     *************************************************/
+
+    const texto =
+      "🚨 *Un cliente quiere ser contactado — Sigue Tu Caso*\n\n" +
+
+      `*Número caso:* ${
+        numero_caso || "_sin dato_"
+      }\n` +
+
+      `*Patente:* ${
+        patente || "_sin dato_"
+      }\n` +
+
+      `*Mensaje:* ${
+        mensaje || "_sin dato_"
+      }\n` +
+
+      `*Estado:* ${
+        estado || "_sin dato_"
+      }\n` +
+
+      `*Fecha:* ${fechaChile}\n` +
+
+      `*Responsable:* ${mencion}`;
+
+
+    /*************************************************
+     * ENVIAR A SLACK
+     *************************************************/
+
+    const response = await fetch(
+      "https://slack.com/api/chat.postMessage",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SLACK_TOKEN}`,
+        },
+
+        body: JSON.stringify({
+          channel: SLACK_CHANNEL_ID,
+          text: texto,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+
+    /*************************************************
+     * ERROR SLACK
+     *************************************************/
+
+    if (!data.ok) {
+
+      return res.status(500).json({
+        ok: false,
+        error: data.error || "Error Slack"
+      });
+    }
+
+
+    /*************************************************
+     * OK
+     *************************************************/
+
+    return res.status(200).json({
+      ok: true
     });
-    const d = await r.json();
-    return res.status(200).json({ ok: d.ok, error: d.error || null });
-  } catch (e) {
-    return res.status(500).json({ ok: false, error: e.message });
+
+  } catch (error) {
+
+    return res.status(500).json({
+      ok: false,
+      error: error.message
+    });
   }
 }
